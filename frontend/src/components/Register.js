@@ -3,6 +3,7 @@ import { Box, Button, TextField } from "@mui/material";
 import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 const Register = () => {
   const [formData, setFormData] = useState({ name: "", email: "", password: "", username: "" });
@@ -22,8 +23,30 @@ const Register = () => {
     try {
       const res = await axios.post("http://localhost:5005/register", formData);
       console.log(res.data);
+      if (res.data.message === "User already exists") {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "User already exists. Please try a different username.",
+        });
+      } else {
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: "User created successfully! Login to continue.",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            navigate("/login");
+          }
+        });
+      }
     } catch (err) {
       console.error(err.response.data);
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "An error occurred. Please try again.",
+      });
     }
   };
 

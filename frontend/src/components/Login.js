@@ -3,6 +3,7 @@ import { Box, Button, TextField } from "@mui/material";
 import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -21,9 +22,24 @@ const Login = () => {
     e.preventDefault();
     try {
       const res = await axios.post("http://localhost:5005/login", formData);
+
       console.log(res.data);
+      if (res.data.message === "Login successful") {
+        navigate("/learning-home");
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Login Failed",
+          text: "Invalid email or password. Please try again.",
+        });
+      }
     } catch (err) {
       console.error(err.response.data);
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "An error occurred. Please try again.",
+      });
     }
   };
 

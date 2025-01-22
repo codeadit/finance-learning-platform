@@ -40,7 +40,7 @@ def register():
     
     hashed_password = generate_password_hash(password)
     if user:
-        return jsonify({'message': 'User found', 'user': user.to_json()}), 200
+        return jsonify({'message': 'User already exists', 'user': user.to_json()}), 200
     else:
         # Create new user
         new_user = User(
@@ -54,7 +54,6 @@ def register():
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
-    username = data.get('username')
     email = data.get('email')
     password = data.get('password')
     

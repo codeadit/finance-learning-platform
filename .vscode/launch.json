@@ -6,7 +6,7 @@
   "configurations": [
     {
       "name": "Python: Flask",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/backend/app.py", // Path to your main Flask file
       "args": ["-Xfrozen_modules=off", "run", "--no-debugger", "--no-reload"],
@@ -19,5 +19,6 @@
       "console": "integratedTerminal",
       "python": "${workspaceFolder}/backend/venv/bin/python",
       "cwd": "${workspaceFolder}/backend"
+    }
   ]
 }
