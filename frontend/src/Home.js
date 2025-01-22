@@ -52,6 +52,11 @@ const Home = () => {
               Login
             </Button>
           </Link>
+          <Link to="/about" style={{ textDecoration: "none" }}>
+            <Button variant="contained" color="success" style={{ margin: "10px" }}>
+              About
+            </Button>
+          </Link>
         </Box>
       </Container>
     </BackgroundBox>

@@ -3,6 +3,7 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import FeedbackIcon from "@mui/icons-material/Feedback";
 import HomeIcon from "@mui/icons-material/Home";
+import InfoIcon from "@mui/icons-material/Info";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import { Box } from "@mui/material";
 import React from "react";
@@ -36,6 +37,10 @@ const LearningHome = () => {
         <Link to="/logout" className="nav-item">
           <ExitToAppIcon fontSize="large" />
           <span>Logout</span>
+        </Link>
+        <Link to="/about" className="nav-item">
+          <InfoIcon fontSize="large" />
+          <span>About</span>
         </Link>
       </nav>
       <div className="content">
