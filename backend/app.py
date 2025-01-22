@@ -1,37 +1,66 @@
 # app.py
+from datetime import datetime
+
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from flask_mongoengine import MongoEngine
 from pymongo import MongoClient
 from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})  # Enable CORS for all routes and specify allowed origin
 
-client = MongoClient('mongodb://localhost:27017/')
-db = client['user_db']
-users = db['users']
+# Configure MongoDB settings
+app.config['MONGODB_SETTINGS'] = {
+    'db': 'user_db',
+    'host': 'localhost',
+    'port': 27017
+}
+
+# Initialize MongoEngine
+db = MongoEngine()
+db.init_app(app)
+
+# Define the User schema
+class User(db.Document):
+    username = db.StringField(required=True, unique=True)
+    email = db.StringField(required=True)
+    password = db.StringField(required=True)
+    created_at = db.DateTimeField(default=datetime.utcnow)
 
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
-    username = data['username']
-    password = data['password']
-    
-    if users.find_one({'username': username}):
-        return jsonify({'message': 'User already exists'}), 400
+    username = data.get('username')
+    email = data.get('email')
+    password = data.get('password')
+
+    # Find user by username
+    user = User.objects(username=username).first()
     
     hashed_password = generate_password_hash(password)
-    users.insert_one({'username': username, 'password': hashed_password})
-    
-    return jsonify({'message': 'User registered successfully'}), 201
+    if user:
+        return jsonify({'message': 'User found', 'user': user.to_json()}), 200
+    else:
+        # Create new user
+        new_user = User(
+            username=username,
+            email=email,
+            password=hashed_password
+        )
+        new_user.save()
+        return jsonify({'message': 'User created', 'user': new_user.to_json()}), 201
 
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
-    username = data['username']
-    password = data['password']
+    username = data.get('username')
+    email = data.get('email')
+    password = data.get('password')
     
-    user = users.find_one({'username': username})
+    # Find user by username
+    user = User.objects(email=email).first()
+
     if user and check_password_hash(user['password'], password):
         return jsonify({'message': 'Login successful'}), 200
     else:
