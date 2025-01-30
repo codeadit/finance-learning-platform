@@ -21,7 +21,7 @@ const Register = () => {
   const onSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5005/register", formData);
+      const res = await axios.post("http://localhost:5005/user/register", formData);
       console.log(res.data);
       if (res.data.message === "User already exists") {
         Swal.fire({

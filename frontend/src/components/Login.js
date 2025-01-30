@@ -21,7 +21,7 @@ const Login = () => {
   const onSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5005/login", formData);
+      const res = await axios.post("http://localhost:5005/user/login", formData);
 
       console.log(res.data);
       if (res.data.message === "Login successful") {
