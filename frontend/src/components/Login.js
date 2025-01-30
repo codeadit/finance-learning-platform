@@ -18,6 +18,22 @@ const Login = () => {
     navigate("/");
   };
 
+  // Example of using the auth token for subsequent requests
+  const fetchProtectedData = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const res = await axios.get("http://localhost:5005/protected-route", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log("Protected data:", res.data);
+    } catch (error) {
+      console.error("An error occurred while fetching protected data:", error);
+    }
+  };
+
   const onSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -25,6 +41,7 @@ const Login = () => {
 
       console.log(res.data);
       if (res.data.message === "Login successful") {
+        localStorage.setItem("authtoken", res.data.token);
         navigate("/learning-home");
       } else {
         Swal.fire({
