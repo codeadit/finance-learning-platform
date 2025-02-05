@@ -4,6 +4,7 @@ import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import { convertBackendToFrontendUserType } from "../constants/UserTypes";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -21,7 +22,7 @@ const Login = () => {
   // Example of using the auth token for subsequent requests
   const fetchProtectedData = async () => {
     try {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem("authUser.token");
       const res = await axios.get("http://localhost:5005/protected-route", {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -41,7 +42,10 @@ const Login = () => {
 
       console.log(res.data);
       if (res.data.message === "Login successful") {
-        localStorage.setItem("authToken", res.data.token);
+        localStorage.setItem("authUser.token", res.data.token);
+        const backendUserType = res.data.user_type;
+        const frontendUserType = convertBackendToFrontendUserType(backendUserType);
+        localStorage.setItem("authUser.type", frontendUserType);
         navigate("/learning-home/");
       } else {
         Swal.fire({

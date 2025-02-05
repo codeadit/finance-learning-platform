@@ -5,19 +5,27 @@ import FeedbackIcon from "@mui/icons-material/Feedback";
 import HomeIcon from "@mui/icons-material/Home";
 import InfoIcon from "@mui/icons-material/Info";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
+import PeopleIcon from "@mui/icons-material/People"; // Import the new icon
 import { Box } from "@mui/material";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, Route, Routes, useNavigate } from "react-router-dom";
+import { haveUserManagementAccess } from "../constants/UserTypes";
 import About from "./About";
 import "./LearningHome.css";
+import UsersListView from "./UserListView"; // Import the new component
 
 const LearningHome = () => {
   const navigate = useNavigate();
+  const [userType, setUserType] = useState(null);
 
   useEffect(() => {
-    const authToken = localStorage.getItem("authToken");
+    const authToken = localStorage.getItem("authUser.token");
+    const authUserType = localStorage.getItem("authUser.type");
+    console.log("authUserType", authUserType);
     if (!authToken) {
       navigate("/login");
+    } else {
+      setUserType(authUserType);
     }
   }, [navigate]);
 
@@ -40,6 +48,14 @@ const LearningHome = () => {
           <AssignmentIcon fontSize="large" />
           <span>Projects</span>
         </Link>
+        {haveUserManagementAccess(userType) && (
+          <>
+            <Link to="/learning-home/users" className="nav-item">
+              <PeopleIcon fontSize="large" />
+              <span>Users</span>
+            </Link>
+          </>
+        )}
         <Link to="/learning-home/feedback" className="nav-item">
           <FeedbackIcon fontSize="large" />
           <span>Feedback</span>
@@ -56,6 +72,7 @@ const LearningHome = () => {
       <div className="content">
         <Routes>
           <Route path="about" element={<About />} />
+          <Route path="users" element={<UsersListView />} />
           {/* Add more routes here */}
         </Routes>
         <Box

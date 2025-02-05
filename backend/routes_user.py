@@ -28,7 +28,6 @@ def register():
 @user_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
-    username = data.get('username')
     password = data.get('password')
     email = data.get('email')
 
@@ -37,22 +36,26 @@ def login():
 
     user = User.objects(email=email).first()
     if user and check_password_hash(user.password, password):
-        access_token = create_access_token(identity={'username': username})
-        return jsonify(message='Login successful', token=access_token), 200
+        access_token = create_access_token(identity=email)
+        return jsonify(message='Login successful', token=access_token, user_type=user.user_type), 200
     else:
         return jsonify({'error': 'Invalid credentials'}), 401
     
 @user_bp.route('/users', methods=['GET'])
 @jwt_required()
 def get_users():
-    current_user = get_jwt_identity()
-    # this user needs to be a founder to see all users 
-    user = User.objects(username=current_user).first()
-    if user.user_type != 'founder':
-        return jsonify({'error': 'Unauthorized access'}), 403
-    
+    current_user_email = get_jwt_identity()
+    user = User.objects(email=current_user_email).first()
+
     users = User.objects()
-    return jsonify(users), 200
+    users_list = []
+    for user in users:
+        users_list.append({
+            'username': user.username,
+            'userType': user.user_type,
+        })
+    return jsonify(users_list), 200
+
 
 # get all students
 @user_bp.route('/students', methods=['GET'])

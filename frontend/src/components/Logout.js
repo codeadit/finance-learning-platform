@@ -6,7 +6,7 @@ const Logout = () => {
 
   useEffect(() => {
     // Remove the auth token from local storage
-    localStorage.removeItem("authToken");
+    localStorage.removeItem("authUser.token");
 
     // Navigate to the home page
     navigate("/");
