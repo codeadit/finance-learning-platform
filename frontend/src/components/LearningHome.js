@@ -6,31 +6,41 @@ import HomeIcon from "@mui/icons-material/Home";
 import InfoIcon from "@mui/icons-material/Info";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import { Box } from "@mui/material";
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Link, Route, Routes, useNavigate } from "react-router-dom";
+import About from "./About";
 import "./LearningHome.css";
 
 const LearningHome = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const authToken = localStorage.getItem("authToken");
+    if (!authToken) {
+      navigate("/login");
+    }
+  }, [navigate]);
+
   return (
     <div className="learning-home-page">
       <nav className="left-nav">
-        <Link to="/" className="nav-item">
+        <Link to="/learning-home/" className="nav-item">
           <HomeIcon fontSize="large" />
           <span>Home</span>
         </Link>
-        <Link to="/dashboard" className="nav-item">
+        <Link to="/learning-home/dashboard" className="nav-item">
           <DashboardIcon fontSize="large" />
           <span>My Dashboard</span>
         </Link>
-        <Link to="/course-catalog" className="nav-item">
+        <Link to="/learning-home/course-catalog" className="nav-item">
           <MenuBookIcon fontSize="large" />
           <span>Course Catalog</span>
         </Link>
-        <Link to="/projects" className="nav-item">
+        <Link to="/learning-home/projects" className="nav-item">
           <AssignmentIcon fontSize="large" />
           <span>Projects</span>
         </Link>
-        <Link to="/feedback" className="nav-item">
+        <Link to="/learning-home/feedback" className="nav-item">
           <FeedbackIcon fontSize="large" />
           <span>Feedback</span>
         </Link>
@@ -38,12 +48,16 @@ const LearningHome = () => {
           <ExitToAppIcon fontSize="large" />
           <span>Logout</span>
         </Link>
-        <Link to="/about" className="nav-item">
+        <Link to="/learning-home/about" className="nav-item">
           <InfoIcon fontSize="large" />
           <span>About</span>
         </Link>
       </nav>
       <div className="content">
+        <Routes>
+          <Route path="about" element={<About />} />
+          {/* Add more routes here */}
+        </Routes>
         <Box
           sx={{
             position: "relative",

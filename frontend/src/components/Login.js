@@ -41,8 +41,8 @@ const Login = () => {
 
       console.log(res.data);
       if (res.data.message === "Login successful") {
-        localStorage.setItem("authtoken", res.data.token);
-        navigate("/learning-home");
+        localStorage.setItem("authToken", res.data.token);
+        navigate("/learning-home/");
       } else {
         Swal.fire({
           icon: "error",
