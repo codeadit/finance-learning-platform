@@ -9,7 +9,7 @@
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/backend/app.py", // Path to your main Flask file
-      "args": ["-Xfrozen_modules=off", "run", "--no-debugger", "--no-reload"],
+      "args": ["run", "--no-debugger", "--no-reload"],
       "jinja": true,
       "env": {
         "FLASK_APP": "${workspaceFolder}/backend/app.py", // Path to your main Flask file
@@ -17,7 +17,7 @@
       },
       "envFile": "${workspaceFolder}/backend/.env",
       "console": "integratedTerminal",
-      "python": "${workspaceFolder}/backend/venv/bin/python",
+      "justMyCode": true,
       "cwd": "${workspaceFolder}/backend"
     }
   ]
