@@ -18,43 +18,45 @@ import React, { useEffect, useState } from "react";
 import { convertBackendToFrontendUserType, convertFrontEndToBackendUserType, UserTypes } from "../constants/UserTypes"; // Import user types
 import { backgroundStyle } from "../constants/styles";
 
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 const UsersListView = () => {
   const [users, setUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]); // Add state for selected users
   const [loading, setLoading] = useState(true); // Add loading state
 
+  // Fetch user data from the backend
+  const fetchUsers = async () => {
+    try {
+      const token = localStorage.getItem("authUser.token");
+      await axios
+        .get(`${API_BASE_URL}/user/users`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .then((res) => {
+          // need to convert backend user type to frontend user type
+          res.data.forEach((user) => {
+            console.log("user", user);
+            console.log("user.userType", user.userType);
+            user.userType = convertBackendToFrontendUserType(user.userType);
+          });
+
+          setUsers(res.data);
+          setLoading(false); // Set loading to false after data is fetched
+        })
+        .catch((res) => {
+          console.error("Error fetching users:", res);
+          setLoading(false); // Set loading to false after data is fetched
+        }); // need to wait till the data is fetched
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setLoading(false); // Set loading to false after data is fetched
+    }
+  };
+
   useEffect(() => {
-    // Fetch user data from the backend
-    const fetchUsers = async () => {
-      try {
-        const token = localStorage.getItem("authUser.token");
-        await axios
-          .get("http://localhost:5005/user/users", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          })
-          .then((res) => {
-            // need to convert backend user type to frontend user type
-            res.data.forEach((user) => {
-              console.log("user", user);
-              console.log("user.userType", user.userType);
-              user.userType = convertBackendToFrontendUserType(user.userType);
-            });
-
-            setUsers(res.data);
-            setLoading(false); // Set loading to false after data is fetched
-          })
-          .catch((res) => {
-            console.error("Error fetching users:", res);
-            setLoading(false); // Set loading to false after data is fetched
-          }); // need to wait till the data is fetched
-      } catch (error) {
-        console.error("Error fetching users:", error);
-        setLoading(false); // Set loading to false after data is fetched
-      }
-    };
-
     fetchUsers();
   }, []);
 
@@ -64,7 +66,7 @@ const UsersListView = () => {
       const user = users.find((user) => user.username === userId);
       const backendType = convertFrontEndToBackendUserType(newType);
       await axios.put(
-        `http://localhost:5005/user/usertype`,
+        `${API_BASE_URL}/user/usertype`,
         { email: user.email, userType: backendType },
         {
           headers: {
@@ -72,7 +74,7 @@ const UsersListView = () => {
           },
         }
       );
-      setUsers((prevUsers) => prevUsers.map((user) => (user._id === userId ? { ...user, userType: newType } : user)));
+      await fetchUsers();
     } catch (error) {
       console.error("Error updating user type:", error);
     }
@@ -97,7 +99,7 @@ const UsersListView = () => {
       // make a comma separated string of selected users
       const idtoDelete = selectedUsers.join(",");
       console.log("idtoDelete", idtoDelete);
-      await axios.delete("http://localhost:5005/user/users", {
+      await axios.delete(`${API_BASE_URL}/user/users`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

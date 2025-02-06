@@ -7,6 +7,8 @@ import Swal from "sweetalert2";
 import { convertBackendToFrontendUserType } from "../constants/UserTypes";
 import { backgroundStyle } from "../constants/styles";
 
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
 
@@ -23,7 +25,7 @@ const Login = () => {
   const onSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5005/user/login", formData);
+      const res = await axios.post(`${API_BASE_URL}/user/login`, formData);
 
       console.log(res.data);
       if (res.data.message === "Login successful") {
