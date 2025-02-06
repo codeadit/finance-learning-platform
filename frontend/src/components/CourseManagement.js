@@ -2,8 +2,8 @@ import { Box, Button, Paper, Table, TableBody, TableCell, TableContainer, TableH
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import CourseDialog from "./CourseDialog";
-import QuestionBankDialog from "./QuestionBankDialog";
 import QuestionDialog from "./QuestionDialog";
+import QuestionSetDialog from "./QuestionSetDialog";
 import SubTopicDialog from "./SubTopicDialog";
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -11,40 +11,48 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const CourseManagement = () => {
   const [courses, setCourses] = useState([]);
   const [subTopics, setSubTopics] = useState([]);
-  const [questionBanks, setQuestionBanks] = useState([]);
+  const [questionSets, setQuestionSets] = useState([]);
   const [questions, setQuestions] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogType, setDialogType] = useState("");
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem("authToken");
-        const [coursesRes, subTopicsRes, questionBanksRes] = await Promise.all([
-          axios.get(`${API_BASE_URL}/courses`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }),
-          axios.get(`${API_BASE_URL}/subtopics`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }),
-          axios.get(`${API_BASE_URL}/questionbanks`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }),
-        ]);
-        setCourses(coursesRes.data);
-        setSubTopics(subTopicsRes.data);
-        setQuestionBanks(questionBanksRes.data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem("authUser.token");
+      const [coursesRes, subTopicsRes, questionSetRes] = await Promise.all([
+        axios.get(`${API_BASE_URL}/courses/courses`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+        axios.get(`${API_BASE_URL}/courses/subtopics`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+        axios.get(`${API_BASE_URL}/courses/questionsets`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+      ]);
+      if (coursesRes.data !== undefined) {
+        {
+          setCourses(coursesRes.data);
+        }
+        if (subTopicsRes.data !== undefined) {
+          setSubTopics(subTopicsRes.data);
+        }
+        if (questionSetRes.data !== undefined) {
+          setQuestionSets(questionSetRes.data);
+        }
       }
-    };
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
 
+  useEffect(() => {
     fetchData();
   }, []);
 
@@ -65,8 +73,8 @@ const CourseManagement = () => {
       case "subTopic":
         setSubTopics([...subTopics, item]);
         break;
-      case "questionBank":
-        setQuestionBanks([...questionBanks, item]);
+      case "questionSet":
+        setQuestionSets([...questionSets, item]);
         break;
       case "question":
         setQuestions([...questions, item]);
@@ -132,23 +140,23 @@ const CourseManagement = () => {
         </Table>
       </TableContainer>
 
-      <Button variant="contained" color="primary" onClick={() => handleOpenDialog("questionBank")} sx={{ marginTop: 2 }}>
-        Create Question Bank
+      <Button variant="contained" color="primary" onClick={() => handleOpenDialog("questionSet")} sx={{ marginTop: 2 }}>
+        Create Question Set
       </Button>
       <TableContainer component={Paper} sx={{ marginTop: 2 }}>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: "bold" }}>Question Bank Name</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>Question Bank Description</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Question Set Name</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Question Set Description</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Associated Course</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Associated Sub Topics</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {questionBanks.map((questionBank) => (
-              <TableRow key={questionBank.id}>
-                <TableCell>{questionBank.name}</TableCell>
+            {questionSets.map((questionSet) => (
+              <TableRow key={questionSet.id}>
+                <TableCell>{questionSet.name}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -169,7 +177,7 @@ const CourseManagement = () => {
               <TableCell sx={{ fontWeight: "bold" }}>Difficulty Level</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Associated Sub Topics</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Associated Courses</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>Associated Question Banks</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Associated Question Sets</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -182,7 +190,7 @@ const CourseManagement = () => {
                 <TableCell>{question.difficulty}</TableCell>
                 <TableCell>{question.subTopics.join(", ")}</TableCell>
                 <TableCell>{question.courses.join(", ")}</TableCell>
-                <TableCell>{question.questionBanks.join(", ")}</TableCell>
+                <TableCell>{question.questionSets.join(", ")}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -191,14 +199,14 @@ const CourseManagement = () => {
 
       <CourseDialog open={openDialog && dialogType === "course"} onClose={handleCloseDialog} onCreate={handleCreateItem} />
       <SubTopicDialog open={openDialog && dialogType === "subTopic"} onClose={handleCloseDialog} onCreate={handleCreateItem} />
-      <QuestionBankDialog open={openDialog && dialogType === "questionBank"} onClose={handleCloseDialog} onCreate={handleCreateItem} />
+      <QuestionSetDialog open={openDialog && dialogType === "questionSet"} onClose={handleCloseDialog} onCreate={handleCreateItem} />
       <QuestionDialog
         open={openDialog && dialogType === "question"}
         onClose={handleCloseDialog}
         onCreate={handleCreateItem}
         courses={courses}
         subTopics={subTopics}
-        questionBanks={questionBanks}
+        questionSets={questionSets}
       />
     </Box>
   );

@@ -24,8 +24,8 @@ const CourseDialog = ({ open, onClose, onCreate }) => {
 
   const handleCreate = async () => {
     try {
-      const token = localStorage.getItem("authToken");
-      const response = await axios.post(`${API_BASE_URL}/courses`, course, {
+      const token = localStorage.getItem("authUser.token");
+      const response = await axios.post(`${API_BASE_URL}/courses/courses`, course, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

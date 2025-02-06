@@ -1,36 +1,36 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
 import React, { useState } from "react";
 
-const QuestionBankDialog = ({ open, onClose, onCreate }) => {
-  const [questionBank, setQuestionBank] = useState({
+const QuestionSetDialog = ({ open, onClose, onCreate }) => {
+  const [questionSet, setQuestionSet] = useState({
     name: "",
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setQuestionBank((prev) => ({
+    setQuestionSet((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
   const handleCreate = () => {
-    onCreate(questionBank);
+    onCreate(questionSet);
     onClose();
   };
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Create Question Bank</DialogTitle>
+      <DialogTitle>Create Question Set</DialogTitle>
       <DialogContent>
         <TextField
           autoFocus
           margin="dense"
-          label="Question Bank Name"
+          label="Question Set Name"
           type="text"
           fullWidth
           name="name"
-          value={questionBank.name}
+          value={questionSet.name}
           onChange={handleChange}
         />
       </DialogContent>
@@ -46,4 +46,4 @@ const QuestionBankDialog = ({ open, onClose, onCreate }) => {
   );
 };
 
-export default QuestionBankDialog;
+export default QuestionSetDialog;

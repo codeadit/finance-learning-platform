@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import { Editor, EditorState, convertToRaw } from "draft-js";
 import "draft-js/dist/Draft.css";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const QuestionDialog = ({ open, onClose, onCreate, courses, subTopics, questionBanks }) => {
   const [question, setQuestion] = useState({
@@ -25,6 +25,10 @@ const QuestionDialog = ({ open, onClose, onCreate, courses, subTopics, questionB
     courses: [],
     questionBanks: [],
   });
+
+  useEffect(() => {
+    console.log("Courses:", courses);
+  }, [courses]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -95,7 +99,7 @@ const QuestionDialog = ({ open, onClose, onCreate, courses, subTopics, questionB
         <FormControl fullWidth margin="dense">
           <InputLabel>Associated Sub Topics</InputLabel>
           <Select multiple name="subTopics" value={question.subTopics} onChange={handleChange}>
-            {subTopics.map((subTopic) => (
+            {subTopics?.map((subTopic) => (
               <MenuItem key={subTopic.id} value={subTopic.name}>
                 {subTopic.name}
               </MenuItem>
@@ -105,9 +109,9 @@ const QuestionDialog = ({ open, onClose, onCreate, courses, subTopics, questionB
         <FormControl fullWidth margin="dense">
           <InputLabel>Associated Courses</InputLabel>
           <Select multiple name="courses" value={question.courses} onChange={handleChange}>
-            {courses.map((course) => (
-              <MenuItem key={course.id} value={course.name}>
-                {course.name}
+            {courses?.map((course) => (
+              <MenuItem key={course.courseid} value={course.course_name}>
+                {course.course_name}
               </MenuItem>
             ))}
           </Select>
@@ -115,7 +119,7 @@ const QuestionDialog = ({ open, onClose, onCreate, courses, subTopics, questionB
         <FormControl fullWidth margin="dense">
           <InputLabel>Associated Question Banks</InputLabel>
           <Select multiple name="questionBanks" value={question.questionBanks} onChange={handleChange}>
-            {questionBanks.map((questionBank) => (
+            {questionBanks?.map((questionBank) => (
               <MenuItem key={questionBank.id} value={questionBank.name}>
                 {questionBank.name}
               </MenuItem>
