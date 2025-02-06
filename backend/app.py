@@ -10,6 +10,7 @@ from jwt_setup import setup_jwt
 from models import User, db
 from pymongo import MongoClient
 from routes_user import user_bp
+from routes_courses import courses_bp
 from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
@@ -29,6 +30,7 @@ jwt = setup_jwt(app)
 
 # Register blueprints
 app.register_blueprint(user_bp, url_prefix='/user')
+app.register_blueprint(courses_bp, url_prefix='/courses')
 
 @app.route('/')
 def home():

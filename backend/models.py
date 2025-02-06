@@ -31,6 +31,7 @@ class Questions(db.Document):
     question_text = db.StringField(required=True)
     options = db.ListField(db.StringField(), required=True)
     correct_answer = db.StringField(required=True)
+    difficulty = db.StringField(required=True)
     explanation = db.StringField()
 
 class QuestionSet(db.Document):

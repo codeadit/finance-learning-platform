@@ -1,3 +1,4 @@
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings"; // Import the AdminPanelSettings icon
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
@@ -10,6 +11,7 @@ import React, { useEffect, useState } from "react";
 import { Link, Route, Routes, useNavigate } from "react-router-dom";
 import { haveUserManagementAccess } from "../constants/UserTypes";
 import About from "./About";
+import CourseManagement from "./CourseManagement"; // Import the new component
 import "./LearningHome.css";
 import LearningLandingPage from "./LearningLandingPage";
 import UsersListView from "./UserListView"; // Import the new component
@@ -52,7 +54,11 @@ const LearningHome = () => {
           <>
             <Link to="/learning-home/users" className="nav-item">
               <PeopleIcon fontSize="large" />
-              <span>Users</span>
+              <span>User Management</span>
+            </Link>
+            <Link to="/learning-home/course-management" className="nav-item">
+              <AdminPanelSettingsIcon fontSize="large" />
+              <span>Course Management</span>
             </Link>
           </>
         )}
@@ -74,6 +80,7 @@ const LearningHome = () => {
           <Route path="about" element={<About />} />
           <Route path="users" element={<UsersListView />} />
           <Route path="/" element={<LearningLandingPage />} />
+          <Route path="course-management" element={<CourseManagement />} /> {/* Course Management route */}
           {/* Add more routes here */}
         </Routes>
       </div>
