@@ -93,12 +93,15 @@ const UsersListView = () => {
   const handleDeleteUsers = async () => {
     console.log("selectedUsers", selectedUsers);
     try {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem("authUser.token");
+      // make a comma separated string of selected users
+      const idtoDelete = selectedUsers.join(",");
+      console.log("idtoDelete", idtoDelete);
       await axios.delete("http://localhost:5005/user/users", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        data: { userIds: selectedUsers },
+        data: { userIds: idtoDelete },
       });
       setUsers((prevUsers) => prevUsers.filter((user) => !selectedUsers.includes(user.username)));
       setSelectedUsers([]); // Clear selected users after deletion

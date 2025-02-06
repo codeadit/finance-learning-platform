@@ -133,3 +133,25 @@ def change_user_type():
         return jsonify({'message': 'User type updated successfully'}), 200
     else:
         return jsonify({'error': 'User not found'}), 404
+    
+# delete user
+@user_bp.route('/users', methods=['DELETE'])
+@jwt_required()
+def delete_user():
+    if not is_founder():
+        return jsonify({'error': 'Unauthorized access'}), 403
+    
+    data = request.get_json() # can be comma separated emails
+    userIds = data.get('userIds')
+    userIdList = userIds.split(',')
+    userIds_deleted = []
+    userIds_not_found = []
+    for i in userIdList:
+        user = User.objects(username=i).first()
+        if user:
+            user.delete()
+            userIds_deleted.append(i)
+        else:
+            userIds_not_found.append(i)
+
+    return jsonify({'message': 'Users deleted successfully', 'userIds_deleted': userIds_deleted, 'userIds_not_found': userIds_not_found}), 200
