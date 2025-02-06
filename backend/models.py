@@ -11,6 +11,12 @@ class User(db.Document):
     created_at = db.DateTimeField(default=datetime.utcnow)
     user_type = db.StringField(required=True) # Can be 'student', 'teacher' or 'founder'
 
+#create a field of study model, courses will be linked to this
+class FieldOfStudy(db.Document):
+    fieldid = db.StringField(required=True, unique=True)
+    field_name = db.StringField(required=True)
+    field_description = db.StringField()
+
 # These define the course structure
 class Course(db.Document):
     courseid = db.StringField(required=True, unique=True)
@@ -19,6 +25,7 @@ class Course(db.Document):
     agestart = db.IntField(required=True)
     ageend = db.IntField(required=True)
     free_course = db.BooleanField(required=True)
+    field_of_study = db.ReferenceField(FieldOfStudy, required=True)
 
 class Subtopic(db.Document):
     subtopicid = db.StringField(required=True, unique=True)

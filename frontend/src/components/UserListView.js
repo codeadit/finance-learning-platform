@@ -15,6 +15,8 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 import { convertBackendToFrontendUserType, convertFrontEndToBackendUserType, UserTypes } from "../constants/UserTypes"; // Import user types
 import { backgroundStyle } from "../constants/styles";
 
@@ -24,6 +26,7 @@ const UsersListView = () => {
   const [users, setUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]); // Add state for selected users
   const [loading, setLoading] = useState(true); // Add loading state
+  const navigate = useNavigate();
 
   // Fetch user data from the backend
   const fetchUsers = async () => {
@@ -51,8 +54,19 @@ const UsersListView = () => {
           setLoading(false); // Set loading to false after data is fetched
         }); // need to wait till the data is fetched
     } catch (error) {
-      console.error("Error fetching users:", error);
-      setLoading(false); // Set loading to false after data is fetched
+      if (error.response && error.response.status === 401) {
+        Swal.fire({
+          icon: "warning",
+          title: "Login Expired",
+          text: "Your login session has expired. Please log in again.",
+          confirmButtonText: "OK",
+        }).then(() => {
+          navigate("/login");
+        });
+      } else {
+        console.error("Error fetching users:", error);
+        setLoading(false); // Set loading to false after data is fetched
+      }
     }
   };
 
