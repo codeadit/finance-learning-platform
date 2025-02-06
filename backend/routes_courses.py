@@ -59,12 +59,7 @@ def get_questionsets():
     questionsets = QuestionSet.objects()
     return jsonify(questionsets), 200
 
-#get list of all Field of Study (FOS)
-@courses_bp.route('/fields_of_study', methods=['GET'])
-@jwt_required()
-def get_fieldofstudy():
-    fos = FieldOfStudy.objects()
-    return jsonify(fos), 200
+# CRUD operations for Field of Study
 
 #create a new course
 @courses_bp.route('/fields_of_study', methods=['POST'])
@@ -86,6 +81,31 @@ def create_fieldofstudy():
     fos.save()
 
     return jsonify({'message': 'Field Of Study created successfully'}), 201
+
+#get list of all Field of Study (FOS)
+@courses_bp.route('/fields_of_study', methods=['GET'])
+@jwt_required()
+def get_fieldofstudy():
+    fos = FieldOfStudy.objects()
+    return jsonify(fos), 200
+
+# Update field of study
+@courses_bp.route('/fields_of_study/<fieldid>', methods=['PUT'])
+@jwt_required()
+def update_fieldofstudy(fieldid):
+    data = request.get_json()
+    field_name = data.get('field_name')
+    field_description = data.get('field_description')
+
+    if not field_name or not field_description:
+        return jsonify({'error': 'Missing required fields'}), 400
+
+    fos = FieldOfStudy.objects(fieldid=fieldid).first()
+    if not fos:
+        return jsonify({'error': 'Field of Study not found'}), 404
+
+    fos.update(field_name=field_name, field_description=field_description)
+    return jsonify({'message': 'Field of Study updated successfully'}), 200
 
 #delete field of study
 @courses_bp.route('/fields_of_study', methods=['DELETE'])

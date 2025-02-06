@@ -12,6 +12,7 @@ import {
   TablePagination,
   TableRow,
   Tabs,
+  TextField,
 } from "@mui/material";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
@@ -39,6 +40,8 @@ const CourseManagement = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [tabIndex, setTabIndex] = useState(0); // Add state for tab index
   const navigate = useNavigate();
+  const [editingFOS, setEditingFOS] = useState(null);
+  const [editedFOS, setEditedFOS] = useState({ field_name: "", field_description: "" });
 
   const fetchData = async () => {
     try {
@@ -106,6 +109,26 @@ const CourseManagement = () => {
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
+  };
+
+  const handleEditFOS = (field) => {
+    setEditingFOS(field.fieldid);
+    setEditedFOS({ field_name: field.field_name, field_description: field.field_description });
+  };
+
+  const handleSaveFOS = async (fieldid) => {
+    try {
+      const token = localStorage.getItem("authUser.token");
+      await axios.put(`${API_BASE_URL}/courses/fields_of_study/${fieldid}`, editedFOS, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      fetchData();
+      setEditingFOS(null);
+    } catch (error) {
+      console.error("Error updating field of study:", error);
+    }
   };
 
   const handleCreateItem = (item) => {
@@ -254,8 +277,33 @@ const CourseManagement = () => {
                         onChange={() => handleSelectItem(field.fieldid, "fieldOfStudy")}
                       />
                     </TableCell>
-                    <TableCell>{field.field_name}</TableCell>
-                    <TableCell>{field.field_description}</TableCell>
+                    <TableCell>
+                      {editingFOS === field.fieldid ? (
+                        <TextField
+                          value={editedFOS.field_name}
+                          onChange={(e) => setEditedFOS({ ...editedFOS, field_name: e.target.value })}
+                        />
+                      ) : (
+                        field.field_name
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editingFOS === field.fieldid ? (
+                        <TextField
+                          value={editedFOS.field_description}
+                          onChange={(e) => setEditedFOS({ ...editedFOS, field_description: e.target.value })}
+                        />
+                      ) : (
+                        field.field_description
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editingFOS === field.fieldid ? (
+                        <Button onClick={() => handleSaveFOS(field.fieldid)}>Save</Button>
+                      ) : (
+                        <Button onClick={() => handleEditFOS(field)}>Edit</Button>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
