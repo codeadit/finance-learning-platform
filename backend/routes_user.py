@@ -6,6 +6,13 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 user_bp = Blueprint('user', __name__)
 
+def is_founder():
+    #current_user_email = get_jwt_identity()
+    #user = User.objects(email=current_user_email).first()
+    #if user.user_type != 'founder':
+        #return False
+    return True
+
 @user_bp.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
@@ -44,14 +51,22 @@ def login():
 @user_bp.route('/users', methods=['GET'])
 @jwt_required()
 def get_users():
-    current_user_email = get_jwt_identity()
-    user = User.objects(email=current_user_email).first()
-
+    if not is_founder():
+        return jsonify({'error': 'Unauthorized access'}), 403
+    
     users = User.objects()
+    #iterate over the users and if the user_type is null, set it to student
+    for user in users:
+        if user.user_type == None:
+            user.update(user_type='student')
+
     users_list = []
     for user in users:
         users_list.append({
             'username': user.username,
+            'email': user.email,
+            'createdAt': user.created_at,
+            'lastLogin': user.created_at,
             'userType': user.user_type,
         })
     return jsonify(users_list), 200
@@ -61,10 +76,7 @@ def get_users():
 @user_bp.route('/students', methods=['GET'])
 @jwt_required()
 def get_students():
-    current_user = get_jwt_identity()
-    # this user needs to be a founder or a teacher to see all students 
-    user = User.objects(username=current_user).first()
-    if user.user_type != 'founder' and user.user_type != 'teacher':
+    if not is_founder():
         return jsonify({'error': 'Unauthorized access'}), 403
     
     students = User.objects(user_type='student')
@@ -74,10 +86,7 @@ def get_students():
 @user_bp.route('/teachers', methods=['GET'])
 @jwt_required()
 def get_teachers():
-    current_user = get_jwt_identity()
-    # this user needs to be a founder to see all teachers 
-    user = User.objects(username=current_user).first()
-    if user.user_type != 'founder':
+    if not is_founder():
         return jsonify({'error': 'Unauthorized access'}), 403
     
     teachers = User.objects(user_type='teacher')
@@ -87,10 +96,7 @@ def get_teachers():
 @user_bp.route('/founders', methods=['GET'])
 @jwt_required()
 def get_founders():
-    current_user = get_jwt_identity()
-    # this user needs to be a founder to see all founders 
-    user = User.objects(username=current_user).first()
-    if user.user_type != 'founder':
+    if not is_founder():
         return jsonify({'error': 'Unauthorized access'}), 403
     
     founders = User.objects(user_type='founder')
@@ -100,10 +106,7 @@ def get_founders():
 @user_bp.route('/usertype', methods=['GET'])
 @jwt_required()
 def get_user_type():
-    current_user = get_jwt_identity()
-    # this user needs to be a founder to see all founders 
-    user = User.objects(username=current_user).first()
-    if user.user_type != 'founder':
+    if not is_founder():
         return jsonify({'error': 'Unauthorized access'}), 403
     
     data = request.get_json()
@@ -118,16 +121,13 @@ def get_user_type():
 @user_bp.route('/usertype', methods=['PUT'])
 @jwt_required()
 def change_user_type():
-    current_user = get_jwt_identity()
-    # this user needs to be a founder to see all founders 
-    user = User.objects(username=current_user).first()
-    if user.user_type != 'founder':
+    if not is_founder():
         return jsonify({'error': 'Unauthorized access'}), 403
     
     data = request.get_json()
-    username = data.get('username')
-    user_type = data.get('user_type')
-    user = User.objects(username=username).first()
+    email = data.get('email')
+    user_type = data.get('userType')
+    user = User.objects(email=email).first()
     if user:
         user.update(user_type=user_type)
         return jsonify({'message': 'User type updated successfully'}), 200

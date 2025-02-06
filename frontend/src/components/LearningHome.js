@@ -6,12 +6,12 @@ import HomeIcon from "@mui/icons-material/Home";
 import InfoIcon from "@mui/icons-material/Info";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import PeopleIcon from "@mui/icons-material/People"; // Import the new icon
-import { Box } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { Link, Route, Routes, useNavigate } from "react-router-dom";
 import { haveUserManagementAccess } from "../constants/UserTypes";
 import About from "./About";
 import "./LearningHome.css";
+import LearningLandingPage from "./LearningLandingPage";
 import UsersListView from "./UserListView"; // Import the new component
 
 const LearningHome = () => {
@@ -32,7 +32,7 @@ const LearningHome = () => {
   return (
     <div className="learning-home-page">
       <nav className="left-nav">
-        <Link to="/learning-home/" className="nav-item">
+        <Link to="/learning-home" className="nav-item">
           <HomeIcon fontSize="large" />
           <span>Home</span>
         </Link>
@@ -73,33 +73,9 @@ const LearningHome = () => {
         <Routes>
           <Route path="about" element={<About />} />
           <Route path="users" element={<UsersListView />} />
+          <Route path="/" element={<LearningLandingPage />} />
           {/* Add more routes here */}
         </Routes>
-        <Box
-          sx={{
-            position: "relative",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            height: "100vh",
-            "&::before": {
-              content: '""',
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              backgroundImage: "url(/background.jpg)",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              opacity: 0.1, // 30% transparency
-              zIndex: -1,
-            },
-          }}
-        >
-          <h1>Welcome to the Learning Home Page</h1>
-          {/* Add more content here */}
-        </Box>
       </div>
     </div>
   );

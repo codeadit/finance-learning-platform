@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { convertBackendToFrontendUserType } from "../constants/UserTypes";
+import { backgroundStyle } from "../constants/styles";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -17,22 +18,6 @@ const Login = () => {
 
   const handleHomeClick = () => {
     navigate("/");
-  };
-
-  // Example of using the auth token for subsequent requests
-  const fetchProtectedData = async () => {
-    try {
-      const token = localStorage.getItem("authUser.token");
-      const res = await axios.get("http://localhost:5005/protected-route", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      console.log("Protected data:", res.data);
-    } catch (error) {
-      console.error("An error occurred while fetching protected data:", error);
-    }
   };
 
   const onSubmit = async (e) => {
@@ -65,28 +50,7 @@ const Login = () => {
   };
 
   return (
-    <Box
-      sx={{
-        position: "relative",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        "&::before": {
-          content: '""',
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          backgroundImage: "url(/background.jpg)",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          opacity: 0.3, // 30% transparency
-          zIndex: -1,
-        },
-      }}
-    >
+    <Box sx={backgroundStyle}>
       <Button
         variant="contained"
         color="primary"

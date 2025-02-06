@@ -12,16 +12,32 @@ export const convertBackendToFrontendUserType = (backendUserType) => {
     teacher: UserTypes.TEACHER,
     student: UserTypes.STUDENT,
     developer: UserTypes.DEVELOPER,
+    Founder: UserTypes.FOUNDER,
+    Teacher: UserTypes.TEACHER,
+    Student: UserTypes.STUDENT,
+    Developer: UserTypes.DEVELOPER,
   };
-
-  // temp till I get more implementation in
-  return UserTypes.DEVELOPER;
 
   if (backendUserType === null || backendUserType === undefined) {
     return UserTypes.STUDENT;
   }
+  const frontendUserType = mapping[backendUserType] || UserTypes.STUDENT;
+  return frontendUserType;
+};
 
-  return mapping[backendUserType.toLowerCase()] || null;
+export const convertFrontEndToBackendUserType = (frontendUserType) => {
+  const mapping = {
+    [UserTypes.FOUNDER]: "founder",
+    [UserTypes.TEACHER]: "teacher",
+    [UserTypes.STUDENT]: "student",
+    [UserTypes.DEVELOPER]: "developer",
+  };
+
+  if (frontendUserType === null || frontendUserType === undefined) {
+    return "student";
+  }
+  const backendUserType = mapping[frontendUserType] || "student";
+  return backendUserType;
 };
 
 export const haveUserManagementAccess = (userType) => {

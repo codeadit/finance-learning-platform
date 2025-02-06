@@ -2,6 +2,7 @@ import { Box, Button, Container, Typography } from "@mui/material";
 import { styled } from "@mui/system";
 import React from "react";
 import { Link } from "react-router-dom";
+import { backgroundStyle } from "./constants/styles";
 
 const GradientText = styled(Typography)({
   background: "linear-gradient(45deg, #00008B 30%, #0000CD 90%)",
@@ -11,32 +12,9 @@ const GradientText = styled(Typography)({
   padding: "20px 0",
 });
 
-const BackgroundBox = styled(Box)({
-  position: "relative",
-  height: "100vh",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  textAlign: "center",
-  overflow: "hidden",
-  "&::before": {
-    content: '""',
-    position: "absolute",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-    backgroundImage: "url(/background.jpg)", // Update the path to your image
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    opacity: 0.3, // Adjust the opacity to increase transparency
-    zIndex: -1,
-  },
-});
-
 const Home = () => {
   return (
-    <BackgroundBox>
+    <Box sx={backgroundStyle}>
       <Container maxWidth="sm" style={{ textAlign: "center", marginTop: "50px" }}>
         <GradientText variant="h3" component="h1" gutterBottom>
           Welcome to the Financial Learning Platform
@@ -59,7 +37,7 @@ const Home = () => {
           </Link>
         </Box>
       </Container>
-    </BackgroundBox>
+    </Box>
   );
 };
 

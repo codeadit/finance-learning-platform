@@ -4,6 +4,7 @@ import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import { backgroundStyle } from "../constants/styles";
 
 const Register = () => {
   const [formData, setFormData] = useState({ name: "", email: "", password: "", username: "" });
@@ -51,28 +52,7 @@ const Register = () => {
   };
 
   return (
-    <Box
-      sx={{
-        position: "relative",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        "&::before": {
-          content: '""',
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          backgroundImage: "url(/background.jpg)",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          opacity: 0.3, // 30% transparency
-          zIndex: -1,
-        },
-      }}
-    >
+    <Box sx={backgroundStyle}>
       <Button
         variant="contained"
         color="primary"

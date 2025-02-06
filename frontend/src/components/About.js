@@ -2,6 +2,7 @@ import HomeIcon from "@mui/icons-material/Home";
 import { Box, Button, Container, Grid, Typography } from "@mui/material";
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { backgroundStyle } from "../constants/styles";
 
 const About = () => {
   const navigate = useNavigate();
@@ -12,28 +13,7 @@ const About = () => {
 
   return (
     <div>
-      <Container
-        sx={{
-          position: "relative",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-          "&::before": {
-            content: '""',
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundImage: "url(/background.jpg)",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            opacity: 0.1, // 30% transparency
-            zIndex: -1,
-          },
-        }}
-      >
+      <Container sx={backgroundStyle}>
         <Button
           variant="contained"
           color="primary"
