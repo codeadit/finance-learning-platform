@@ -86,3 +86,27 @@ def create_fieldofstudy():
     fos.save()
 
     return jsonify({'message': 'Field Of Study created successfully'}), 201
+
+#delete field of study
+@courses_bp.route('/fields_of_study', methods=['DELETE'])
+@jwt_required()
+def delete_fieldofstudy():
+    data = request.get_json()
+    ids = data.get('ids')
+
+    if not ids:
+        return jsonify({'error': 'Missing required fields'}), 400
+    
+    idList = ids.split(",")
+    ids_deleted = []
+    ids_not_found = []
+
+    for i in idList:
+        fos = FieldOfStudy.objects(fieldid=i).first()
+        if fos:
+            ids_deleted.append(i)
+            fos.delete()
+        else:
+            ids_not_found.append(i)
+
+    return jsonify({'message': 'Field of Study deleted successfully', 'ids_deleted': ids_deleted, 'ids_not_found': ids_not_found}), 200

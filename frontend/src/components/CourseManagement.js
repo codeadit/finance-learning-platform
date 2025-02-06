@@ -97,7 +97,7 @@ const CourseManagement = () => {
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+  }, []);
 
   const handleOpenDialog = (type) => {
     setDialogType(type);
@@ -144,47 +144,61 @@ const CourseManagement = () => {
     });
   };
 
-  const handleDeleteSelected = async () => {
+  const handleDeleteSelected = async (type) => {
     try {
       const token = localStorage.getItem("authUser.token");
-      await Promise.all(
-        selectedItems.map((item) => {
-          switch (item.type) {
-            case "course":
-              return axios.delete(`${API_BASE_URL}/courses/courses/${item.id}`, {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              });
-            case "subTopic":
-              return axios.delete(`${API_BASE_URL}/courses/subtopics/${item.id}`, {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              });
-            case "questionSet":
-              return axios.delete(`${API_BASE_URL}/courses/questionsets/${item.id}`, {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              });
-            case "question":
-              return axios.delete(`${API_BASE_URL}/courses/questions/${item.id}`, {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              });
-            case "fieldOfStudy":
-              return axios.delete(`${API_BASE_URL}/courses/fields_of_study/${item.id}`, {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              });
-            default:
-              return Promise.resolve();
-          }
-        })
-      );
+      const ids = selectedItems
+        .filter((item) => item.type === type)
+        .map((item) => item.id)
+        .join(",");
+
+      if (!ids) return;
+
+      switch (type) {
+        case "course":
+          await axios.delete(`${API_BASE_URL}/courses/courses`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            data: { ids },
+          });
+          break;
+        case "subTopic":
+          await axios.delete(`${API_BASE_URL}/courses/subtopics`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            data: { ids },
+          });
+          break;
+        case "questionSet":
+          await axios.delete(`${API_BASE_URL}/courses/questionsets`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            data: { ids },
+          });
+          break;
+        case "question":
+          await axios.delete(`${API_BASE_URL}/courses/questions`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            data: { ids },
+          });
+          break;
+        case "fieldOfStudy":
+          await axios.delete(`${API_BASE_URL}/courses/fields_of_study`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            data: { ids },
+          });
+          break;
+        default:
+          break;
+      }
+
       fetchData();
       setSelectedItems([]);
     } catch (error) {
@@ -259,7 +273,7 @@ const CourseManagement = () => {
           <Button
             variant="contained"
             color="secondary"
-            onClick={handleDeleteSelected}
+            onClick={() => handleDeleteSelected("fieldOfStudy")}
             sx={{ margin: 2 }}
             disabled={selectedItems.filter((item) => item.type === "fieldOfStudy").length === 0}
           >
@@ -316,7 +330,7 @@ const CourseManagement = () => {
           <Button
             variant="contained"
             color="secondary"
-            onClick={handleDeleteSelected}
+            onClick={() => handleDeleteSelected("course")}
             sx={{ margin: 2 }}
             disabled={selectedItems.filter((item) => item.type === "course").length === 0}
           >
@@ -367,7 +381,7 @@ const CourseManagement = () => {
           <Button
             variant="contained"
             color="secondary"
-            onClick={handleDeleteSelected}
+            onClick={() => handleDeleteSelected("subTopic")}
             sx={{ margin: 2 }}
             disabled={selectedItems.filter((item) => item.type === "subTopic").length === 0}
           >
@@ -422,7 +436,7 @@ const CourseManagement = () => {
           <Button
             variant="contained"
             color="secondary"
-            onClick={handleDeleteSelected}
+            onClick={() => handleDeleteSelected("questionSet")}
             sx={{ margin: 2 }}
             disabled={selectedItems.filter((item) => item.type === "questionSet").length === 0}
           >
@@ -485,7 +499,7 @@ const CourseManagement = () => {
           <Button
             variant="contained"
             color="secondary"
-            onClick={handleDeleteSelected}
+            onClick={() => handleDeleteSelected("question")}
             sx={{ margin: 2 }}
             disabled={selectedItems.filter((item) => item.type === "question").length === 0}
           >
