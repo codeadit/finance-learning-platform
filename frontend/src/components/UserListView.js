@@ -1,4 +1,18 @@
-import { Box, MenuItem, Paper, Select, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
+import {
+  Box,
+  Button,
+  Checkbox,
+  CircularProgress,
+  MenuItem,
+  Paper,
+  Select,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from "@mui/material";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { convertBackendToFrontendUserType, convertFrontEndToBackendUserType, UserTypes } from "../constants/UserTypes"; // Import user types
@@ -6,6 +20,8 @@ import { backgroundStyle } from "../constants/styles";
 
 const UsersListView = () => {
   const [users, setUsers] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState([]); // Add state for selected users
+  const [loading, setLoading] = useState(true); // Add loading state
 
   useEffect(() => {
     // Fetch user data from the backend
@@ -27,12 +43,15 @@ const UsersListView = () => {
             });
 
             setUsers(res.data);
+            setLoading(false); // Set loading to false after data is fetched
           })
           .catch((res) => {
             console.error("Error fetching users:", res);
+            setLoading(false); // Set loading to false after data is fetched
           }); // need to wait till the data is fetched
       } catch (error) {
         console.error("Error fetching users:", error);
+        setLoading(false); // Set loading to false after data is fetched
       }
     };
 
@@ -59,12 +78,50 @@ const UsersListView = () => {
     }
   };
 
+  const handleSelectUser = (userId) => {
+    if (userId === undefined) {
+      return;
+    }
+
+    console.log("userId", userId);
+    setSelectedUsers((prevSelected) =>
+      prevSelected.includes(userId) ? prevSelected.filter((id) => id !== userId) : [...prevSelected, userId]
+    );
+    console.log("selectedUsers", selectedUsers);
+  };
+
+  const handleDeleteUsers = async () => {
+    console.log("selectedUsers", selectedUsers);
+    try {
+      const token = localStorage.getItem("authToken");
+      await axios.delete("http://localhost:5005/user/users", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        data: { userIds: selectedUsers },
+      });
+      setUsers((prevUsers) => prevUsers.filter((user) => !selectedUsers.includes(user.username)));
+      setSelectedUsers([]); // Clear selected users after deletion
+    } catch (error) {
+      console.error("Error deleting users:", error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
-    <Box sx={backgroundStyle}>
+    <Box sx={backgroundStyle} display="flex" flexDirection="column" alignItems="center">
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
+              <TableCell sx={{ fontWeight: "bold" }}>Select</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>User Name</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Email</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>User Type</TableCell>
@@ -75,6 +132,9 @@ const UsersListView = () => {
           <TableBody>
             {users.map((user) => (
               <TableRow key={user._id}>
+                <TableCell>
+                  <Checkbox checked={selectedUsers.includes(user.username)} onChange={() => handleSelectUser(user.username)} />
+                </TableCell>
                 <TableCell>{user.username}</TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>
@@ -93,6 +153,11 @@ const UsersListView = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      <Box display="flex" justifyContent="center" mt={2}>
+        <Button variant="contained" color="secondary" onClick={handleDeleteUsers} disabled={selectedUsers.length === 0}>
+          Delete Selected Users
+        </Button>
+      </Box>
     </Box>
   );
 };
