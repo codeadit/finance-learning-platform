@@ -2,7 +2,9 @@ import {
   Box,
   Button,
   Checkbox,
+  MenuItem,
   Paper,
+  Select,
   Tab,
   Table,
   TableBody,
@@ -17,8 +19,8 @@ import {
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Swal from "sweetalert2";
 import { backgroundStyle } from "../constants/styles";
+import { handleError } from "../utils/HandleAxiosError";
 import CourseDialog from "./CourseDialog";
 import FieldOfStudyDialog from "./FieldofStudyDialog"; // Import the new dialog component
 import QuestionDialog from "./QuestionDialog";
@@ -42,6 +44,15 @@ const CourseManagement = () => {
   const navigate = useNavigate();
   const [editingFOS, setEditingFOS] = useState(null);
   const [editedFOS, setEditedFOS] = useState({ field_name: "", field_description: "" });
+  const [editingCourse, setEditingCourse] = useState(null);
+  const [editedCourse, setEditedCourse] = useState({
+    course_name: "",
+    course_description: "",
+    agestart: "",
+    ageend: "",
+    free_course: false,
+    field_name: "",
+  });
 
   const fetchData = async () => {
     try {
@@ -83,18 +94,7 @@ const CourseManagement = () => {
         setFieldsOfStudy(fieldsOfStudyRes.data);
       }
     } catch (error) {
-      if (error.response && error.response.status === 401) {
-        Swal.fire({
-          icon: "warning",
-          title: "Login Expired",
-          text: "Your login session has expired. Please log in again.",
-          confirmButtonText: "OK",
-        }).then(() => {
-          navigate("/login");
-        });
-      } else {
-        console.error("Error fetching data:", error);
-      }
+      handleError(error, navigate);
     }
   };
 
@@ -129,6 +129,41 @@ const CourseManagement = () => {
     } catch (error) {
       console.error("Error updating field of study:", error);
     }
+  };
+
+  const handleCancelFOSEdit = () => {
+    setEditingFOS(null);
+  };
+
+  const handleEditCourse = (course) => {
+    setEditingCourse(course.courseid);
+    setEditedCourse({
+      course_name: course.course_name,
+      course_description: course.course_description,
+      agestart: course.agestart,
+      ageend: course.ageend,
+      free_course: course.free_course,
+      field_name: course.field_name,
+    });
+  };
+
+  const handleSaveCourse = async (courseid) => {
+    try {
+      const token = localStorage.getItem("authUser.token");
+      await axios.put(`${API_BASE_URL}/courses/courses/${courseid}`, editedCourse, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      fetchData();
+      setEditingCourse(null);
+    } catch (error) {
+      console.error("Error updating course:", error);
+    }
+  };
+
+  const handleCancelCourseEdit = () => {
+    setEditingCourse(null);
   };
 
   const handleCreateItem = (item) => {
@@ -263,9 +298,9 @@ const CourseManagement = () => {
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
-                  <TableCell>Select</TableCell>
-                  <TableCell>Field of Study Name</TableCell>
-                  <TableCell>Field of Study Description</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Select</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Field of Study Name</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Field of Study Description</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -299,7 +334,10 @@ const CourseManagement = () => {
                     </TableCell>
                     <TableCell>
                       {editingFOS === field.fieldid ? (
-                        <Button onClick={() => handleSaveFOS(field.fieldid)}>Save</Button>
+                        <>
+                          <Button onClick={() => handleSaveFOS(field.fieldid)}>Save</Button>
+                          <Button onClick={() => handleCancelFOSEdit}>Cancel</Button>
+                        </>
                       ) : (
                         <Button onClick={() => handleEditFOS(field)}>Edit</Button>
                       )}
@@ -339,12 +377,13 @@ const CourseManagement = () => {
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
-                  <TableCell>Select</TableCell>
-                  <TableCell>Course Name</TableCell>
-                  <TableCell>Course Description</TableCell>
-                  <TableCell>Min Age</TableCell>
-                  <TableCell>Max Age</TableCell>
-                  <TableCell>Free Course</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Select</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Course Name</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Course Description</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Min Age</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Max Age</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Free Course</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Associated Topic of Study</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -356,11 +395,85 @@ const CourseManagement = () => {
                         onChange={() => handleSelectItem(course.courseid, "course")}
                       />
                     </TableCell>
-                    <TableCell>{course.course_name}</TableCell>
-                    <TableCell>{course.course_description}</TableCell>
-                    <TableCell>{course.agestart}</TableCell>
-                    <TableCell>{course.ageend}</TableCell>
-                    <TableCell>{course.free_course ? "Yes" : "No"}</TableCell>
+                    <TableCell>
+                      {editingCourse === course.courseid ? (
+                        <TextField
+                          value={editedCourse.course_name}
+                          onChange={(e) => setEditedCourse({ ...editedCourse, course_name: e.target.value })}
+                        />
+                      ) : (
+                        course.course_name
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editingCourse === course.courseid ? (
+                        <TextField
+                          value={editedCourse.course_description}
+                          onChange={(e) => setEditedCourse({ ...editedCourse, course_description: e.target.value })}
+                        />
+                      ) : (
+                        course.course_description
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editingCourse === course.courseid ? (
+                        <TextField
+                          value={editedCourse.agestart}
+                          onChange={(e) => setEditedCourse({ ...editedCourse, agestart: e.target.value })}
+                        />
+                      ) : (
+                        course.agestart
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editingCourse === course.courseid ? (
+                        <TextField
+                          value={editedCourse.ageend}
+                          onChange={(e) => setEditedCourse({ ...editedCourse, ageend: e.target.value })}
+                        />
+                      ) : (
+                        course.ageend
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editingCourse === course.courseid ? (
+                        <Checkbox
+                          checked={editedCourse.free_course}
+                          onChange={(e) => setEditedCourse({ ...editedCourse, free_course: e.target.checked })}
+                        />
+                      ) : course.free_course ? (
+                        "Yes"
+                      ) : (
+                        "No"
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editingCourse === course.courseid ? (
+                        <Select
+                          value={editedCourse.fieldid}
+                          onChange={(e) => setEditedCourse({ ...editedCourse, fieldid: e.target.value })}
+                          fullWidth
+                        >
+                          {fieldsOfStudy.map((field) => (
+                            <MenuItem key={field.fieldid} value={field.fieldid}>
+                              {field.field_name}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      ) : (
+                        fieldsOfStudy.find((field) => field.fieldid === course.fieldid)?.field_name || ""
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editingCourse === course.courseid ? (
+                        <>
+                          <Button onClick={() => handleSaveCourse(course.courseid)}>Save</Button>
+                          <Button onClick={handleCancelCourseEdit}>Cancel</Button>
+                        </>
+                      ) : (
+                        <Button onClick={() => handleEditCourse(course)}>Edit</Button>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -396,9 +509,9 @@ const CourseManagement = () => {
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
-                  <TableCell>Select</TableCell>
-                  <TableCell>Sub Topic Name</TableCell>
-                  <TableCell>Sub Topic Description</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Select</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Sub Topic Name</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Sub Topic Description</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -447,11 +560,11 @@ const CourseManagement = () => {
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
-                  <TableCell>Select</TableCell>
-                  <TableCell>Question Set Name</TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell>Associated Course</TableCell>
-                  <TableCell>Associated Sub Topics</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Select</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Question Set Name</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Description</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Associated Course</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Associated Sub Topics</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -502,15 +615,15 @@ const CourseManagement = () => {
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
-                  <TableCell>Select</TableCell>
-                  <TableCell>Question Name</TableCell>
-                  <TableCell>Options</TableCell>
-                  <TableCell>Answer</TableCell>
-                  <TableCell>Explanation</TableCell>
-                  <TableCell>Difficulty Level</TableCell>
-                  <TableCell>Associated Sub Topics</TableCell>
-                  <TableCell>Associated Courses</TableCell>
-                  <TableCell>Associated Question Banks</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Select</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Question Name</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Options</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Answer</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Explanation</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Difficulty Level</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Associated Sub Topics</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Associated Courses</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Associated Question Banks</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -556,7 +669,12 @@ const CourseManagement = () => {
         </>
       )}
 
-      <CourseDialog open={openDialog && dialogType === "course"} onClose={handleCloseDialog} onCreate={handleCreateItem} />
+      <CourseDialog
+        open={openDialog && dialogType === "course"}
+        onClose={handleCloseDialog}
+        onCreate={handleCreateItem}
+        fieldsOfStudy={fieldsOfStudy}
+      />
       <SubTopicDialog open={openDialog && dialogType === "subTopic"} onClose={handleCloseDialog} onCreate={handleCreateItem} />
       <QuestionSetDialog open={openDialog && dialogType === "questionSet"} onClose={handleCloseDialog} onCreate={handleCreateItem} />
       <QuestionDialog

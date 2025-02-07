@@ -1,10 +1,23 @@
-import { Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
+import {
+  Box,
+  Button,
+  Checkbox,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+} from "@mui/material";
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-const CourseDialog = ({ open, onClose, onCreate }) => {
+const CourseDialog = ({ open, onClose, onCreate, fieldsOfStudy }) => {
   const [course, setCourse] = useState({
     courseid: "",
     course_name: "",
@@ -12,7 +25,22 @@ const CourseDialog = ({ open, onClose, onCreate }) => {
     agestart: "",
     ageend: "",
     free_course: false,
+    fieldid: "",
   });
+
+  useEffect(() => {
+    if (open) {
+      setCourse({
+        courseid: "",
+        course_name: "",
+        course_description: "",
+        agestart: "",
+        ageend: "",
+        free_course: false,
+        fieldid: "",
+      });
+    }
+  }, [open]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -42,16 +70,6 @@ const CourseDialog = ({ open, onClose, onCreate }) => {
       <DialogTitle>Create Course</DialogTitle>
       <DialogContent>
         <TextField
-          autoFocus
-          margin="dense"
-          label="Course ID"
-          type="text"
-          fullWidth
-          name="courseid"
-          value={course.courseid}
-          onChange={handleChange}
-        />
-        <TextField
           margin="dense"
           label="Course Name"
           type="text"
@@ -71,6 +89,16 @@ const CourseDialog = ({ open, onClose, onCreate }) => {
         />
         <TextField margin="dense" label="Min Age" type="number" fullWidth name="agestart" value={course.agestart} onChange={handleChange} />
         <TextField margin="dense" label="Max Age" type="number" fullWidth name="ageend" value={course.ageend} onChange={handleChange} />
+        <FormControl fullWidth margin="dense">
+          <InputLabel>Field of Study</InputLabel>
+          <Select name="fieldid" value={course.fieldid} onChange={handleChange}>
+            {fieldsOfStudy.map((field) => (
+              <MenuItem key={field.fieldid} value={field.fieldid}>
+                {field.field_name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
         <Box display="flex" alignItems="center" mt={2}>
           <Checkbox name="free_course" checked={course.free_course} onChange={handleChange} />
           <span>Free Course</span>
