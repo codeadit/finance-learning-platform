@@ -11,9 +11,12 @@ import {
   Select,
   TextField,
 } from "@mui/material";
-import { Editor, EditorState, convertToRaw } from "draft-js";
+import axios from "axios";
+import { Editor, EditorState } from "draft-js";
 import "draft-js/dist/Draft.css";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const QuestionDialog = ({ open, onClose, onCreate, courses, subTopics, questionBanks }) => {
   const [question, setQuestion] = useState({
@@ -25,10 +28,6 @@ const QuestionDialog = ({ open, onClose, onCreate, courses, subTopics, questionB
     courses: [],
     questionBanks: [],
   });
-
-  useEffect(() => {
-    console.log("Courses:", courses);
-  }, [courses]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -45,15 +44,25 @@ const QuestionDialog = ({ open, onClose, onCreate, courses, subTopics, questionB
     }));
   };
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     const formattedQuestion = {
       ...question,
-      options: JSON.stringify(convertToRaw(question.options.getCurrentContent())),
-      correct_answer: JSON.stringify(convertToRaw(question.correct_answer.getCurrentContent())),
-      explanation: JSON.stringify(convertToRaw(question.explanation.getCurrentContent())),
+      options: question.options.getCurrentContent().getPlainText(),
+      correct_answer: question.correct_answer.getCurrentContent().getPlainText(),
+      explanation: question.explanation.getCurrentContent().getPlainText(),
     };
-    onCreate(formattedQuestion);
-    onClose();
+    try {
+      const token = localStorage.getItem("authUser.token");
+      const response = await axios.post(`${API_BASE_URL}/courses/questions`, formattedQuestion, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      onCreate(response.data);
+      onClose();
+    } catch (error) {
+      console.error("Error creating Question:", error);
+    }
   };
 
   return (
@@ -70,60 +79,30 @@ const QuestionDialog = ({ open, onClose, onCreate, courses, subTopics, questionB
           value={question.name}
           onChange={handleChange}
         />
+        <InputLabel>Options</InputLabel>
         <FormControl fullWidth margin="dense">
-          <InputLabel>Options</InputLabel>
           <Box border={1} borderColor="grey.400" borderRadius={4} p={1} minHeight={200}>
             <Editor editorState={question.options} onChange={(editorState) => handleEditorChange("options", editorState)} />
           </Box>
         </FormControl>
+        <InputLabel>Correct Answer</InputLabel>
         <FormControl fullWidth margin="dense">
-          <InputLabel>Correct Answer</InputLabel>
           <Box border={1} borderColor="grey.400" borderRadius={4} p={1} minHeight={200}>
             <Editor editorState={question.correct_answer} onChange={(editorState) => handleEditorChange("correct_answer", editorState)} />
           </Box>
         </FormControl>
+        <InputLabel>Explanation</InputLabel>
         <FormControl fullWidth margin="dense">
-          <InputLabel>Explanation</InputLabel>
           <Box border={1} borderColor="grey.400" borderRadius={4} p={1} minHeight={200}>
             <Editor editorState={question.explanation} onChange={(editorState) => handleEditorChange("explanation", editorState)} />
           </Box>
         </FormControl>
+        <InputLabel>Difficulty Level</InputLabel>
         <FormControl fullWidth margin="dense">
-          <InputLabel>Difficulty Level</InputLabel>
           <Select name="difficulty" value={question.difficulty} onChange={handleChange}>
-            <MenuItem value="easy">Easy</MenuItem>
-            <MenuItem value="medium">Medium</MenuItem>
-            <MenuItem value="hard">Hard</MenuItem>
-          </Select>
-        </FormControl>
-        <FormControl fullWidth margin="dense">
-          <InputLabel>Associated Sub Topics</InputLabel>
-          <Select multiple name="subTopics" value={question.subTopics} onChange={handleChange}>
-            {subTopics?.map((subTopic) => (
-              <MenuItem key={subTopic.id} value={subTopic.name}>
-                {subTopic.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl fullWidth margin="dense">
-          <InputLabel>Associated Courses</InputLabel>
-          <Select multiple name="courses" value={question.courses} onChange={handleChange}>
-            {courses?.map((course) => (
-              <MenuItem key={course.courseid} value={course.course_name}>
-                {course.course_name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl fullWidth margin="dense">
-          <InputLabel>Associated Question Banks</InputLabel>
-          <Select multiple name="questionBanks" value={question.questionBanks} onChange={handleChange}>
-            {questionBanks?.map((questionBank) => (
-              <MenuItem key={questionBank.id} value={questionBank.name}>
-                {questionBank.name}
-              </MenuItem>
-            ))}
+            <MenuItem value="Easy">Easy</MenuItem>
+            <MenuItem value="Medium">Medium</MenuItem>
+            <MenuItem value="Hard">Hard</MenuItem>
           </Select>
         </FormControl>
       </DialogContent>

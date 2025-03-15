@@ -53,11 +53,17 @@ const CourseManagement = () => {
     free_course: false,
     field_name: "",
   });
+  const [editingSubTopic, setEditingSubTopic] = useState(null);
+  const [editedSubTopic, setEditedSubTopic] = useState({ subtopic_name: "", subtopic_description: "", courseid: "" });
+  const [editingQuestionSet, setEditingQuestionSet] = useState(null);
+  const [editedQuestionSet, setEditedQuestionSet] = useState({ name: "", description: "", subTopics: [] });
+  const [editingQuestion, setEditingQuestion] = useState(null);
+  const [editedQuestion, setEditedQuestion] = useState({ name: "", options: "", correct_answer: "", explanation: "", difficulty: "" });
 
   const fetchData = async () => {
     try {
       const token = localStorage.getItem("authUser.token");
-      const [coursesRes, subTopicsRes, questionSetRes, fieldsOfStudyRes] = await Promise.all([
+      const [coursesRes, subTopicsRes, questionSetRes, fieldsOfStudyRes, questionsRes] = await Promise.all([
         axios.get(`${API_BASE_URL}/courses/courses`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -79,6 +85,12 @@ const CourseManagement = () => {
             Authorization: `Bearer ${token}`,
           },
         }),
+        axios.get(`${API_BASE_URL}/courses/questions`, {
+          // Fetch fields of study
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }),
       ]);
       if (coursesRes.data !== undefined) {
         setCourses(coursesRes.data);
@@ -93,6 +105,9 @@ const CourseManagement = () => {
         // Set fields of study state
         setFieldsOfStudy(fieldsOfStudyRes.data);
       }
+      if (questionsRes.data !== undefined) {
+        setQuestions(questionsRes.data);
+      }
     } catch (error) {
       handleError(error, navigate);
     }
@@ -100,6 +115,7 @@ const CourseManagement = () => {
 
   useEffect(() => {
     fetchData();
+    console.log("sub topics", subTopics);
   }, []);
 
   const handleOpenDialog = (type) => {
@@ -164,6 +180,92 @@ const CourseManagement = () => {
 
   const handleCancelCourseEdit = () => {
     setEditingCourse(null);
+  };
+
+  const handleEditSubTopic = (subTopic) => {
+    setEditingSubTopic(subTopic.subtopicid);
+    setEditedSubTopic({
+      subtopic_name: subTopic.subtopic_name,
+      subtopic_description: subTopic.subtopic_description,
+      courseid: subTopic.courseid,
+    });
+  };
+
+  const handleSaveSubTopic = async (subtopicid) => {
+    try {
+      const token = localStorage.getItem("authUser.token");
+      await axios.put(`${API_BASE_URL}/courses/subtopics/${subtopicid}`, editedSubTopic, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      fetchData();
+      setEditingSubTopic(null);
+    } catch (error) {
+      console.error("Error updating sub topic:", error);
+    }
+  };
+
+  const handleCancelSubTopicEdit = () => {
+    setEditingSubTopic(null);
+  };
+
+  const handleEditQuestionSet = (questionSet) => {
+    setEditingQuestionSet(questionSet.questionsetid);
+    setEditedQuestionSet({
+      name: questionSet.name,
+      description: questionSet.description,
+      subTopics: questionSet.subTopics,
+    });
+  };
+
+  const handleSaveQuestionSet = async (id) => {
+    try {
+      const token = localStorage.getItem("authUser.token");
+      await axios.put(`${API_BASE_URL}/courses/questionsets/${id}`, editedQuestionSet, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      fetchData();
+      setEditingQuestionSet(null);
+    } catch (error) {
+      console.error("Error updating question set:", error);
+    }
+  };
+
+  const handleCancelQuestionSetEdit = () => {
+    setEditingQuestionSet(null);
+  };
+
+  const handleEditQuestion = (question) => {
+    setEditingQuestion(question.questionid);
+    setEditedQuestion({
+      question_text: question.question_text,
+      options: question.options,
+      correct_answer: question.correct_answer,
+      explanation: question.explanation,
+      difficulty: question.difficulty,
+    });
+  };
+
+  const handleSaveQuestion = async (id) => {
+    try {
+      const token = localStorage.getItem("authUser.token");
+      await axios.put(`${API_BASE_URL}/courses/questions/${id}`, editedQuestion, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      fetchData();
+      setEditingQuestion(null);
+    } catch (error) {
+      console.error("Error updating question:", error);
+    }
+  };
+
+  const handleCancelQuestionEdit = () => {
+    setEditingQuestion(null);
   };
 
   const handleCreateItem = (item) => {
@@ -336,7 +438,7 @@ const CourseManagement = () => {
                       {editingFOS === field.fieldid ? (
                         <>
                           <Button onClick={() => handleSaveFOS(field.fieldid)}>Save</Button>
-                          <Button onClick={() => handleCancelFOSEdit}>Cancel</Button>
+                          <Button onClick={handleCancelFOSEdit}>Cancel</Button>
                         </>
                       ) : (
                         <Button onClick={() => handleEditFOS(field)}>Edit</Button>
@@ -512,6 +614,7 @@ const CourseManagement = () => {
                   <TableCell sx={{ fontWeight: "bold" }}>Select</TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Sub Topic Name</TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Sub Topic Description</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Associated Course</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -519,12 +622,57 @@ const CourseManagement = () => {
                   <TableRow key={subTopic.id}>
                     <TableCell>
                       <Checkbox
-                        checked={selectedItems.some((item) => item.id === subTopic.id && item.type === "subTopic")}
-                        onChange={() => handleSelectItem(subTopic.id, "subTopic")}
+                        checked={selectedItems.some((item) => item.id === subTopic.subtopicid && item.type === "subTopic")}
+                        onChange={() => handleSelectItem(subTopic.subtopicid, "subTopic")}
                       />
                     </TableCell>
-                    <TableCell>{subTopic.name}</TableCell>
-                    <TableCell>{subTopic.description}</TableCell>
+                    <TableCell>
+                      {editingSubTopic === subTopic.subtopicid ? (
+                        <TextField
+                          value={editedSubTopic.subtopic_name}
+                          onChange={(e) => setEditedSubTopic({ ...editedSubTopic, subtopic_name: e.target.value })}
+                        />
+                      ) : (
+                        subTopic.subtopic_name
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editingSubTopic === subTopic.subtopicid ? (
+                        <TextField
+                          value={editedSubTopic.subtopic_description}
+                          onChange={(e) => setEditedSubTopic({ ...editedSubTopic, subtopic_description: e.target.value })}
+                        />
+                      ) : (
+                        subTopic.subtopic_description
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editingSubTopic === subTopic.subtopicid ? (
+                        <Select
+                          value={editedSubTopic.courseid}
+                          onChange={(e) => setEditedSubTopic({ ...editedSubTopic, courseid: e.target.value })}
+                          fullWidth
+                        >
+                          {courses.map((course) => (
+                            <MenuItem key={course.courseid} value={course.courseid}>
+                              {course.course_name}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      ) : (
+                        courses.find((course) => course.courseid === subTopic.courseid)?.course_name || ""
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editingSubTopic === subTopic.subtopicid ? (
+                        <>
+                          <Button onClick={() => handleSaveSubTopic(subTopic.subtopicid)}>Save</Button>
+                          <Button onClick={handleCancelSubTopicEdit}>Cancel</Button>
+                        </>
+                      ) : (
+                        <Button onClick={() => handleEditSubTopic(subTopic)}>Edit</Button>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -563,7 +711,6 @@ const CourseManagement = () => {
                   <TableCell sx={{ fontWeight: "bold" }}>Select</TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Question Set Name</TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Description</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Associated Course</TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Associated Sub Topics</TableCell>
                 </TableRow>
               </TableHead>
@@ -572,14 +719,58 @@ const CourseManagement = () => {
                   <TableRow key={questionSet.id}>
                     <TableCell>
                       <Checkbox
-                        checked={selectedItems.some((item) => item.id === questionSet.id && item.type === "questionSet")}
-                        onChange={() => handleSelectItem(questionSet.id, "questionSet")}
+                        checked={selectedItems.some((item) => item.id === questionSet.questionsetid && item.type === "questionSet")}
+                        onChange={() => handleSelectItem(questionSet.questionsetid, "questionSet")}
                       />
                     </TableCell>
-                    <TableCell>{questionSet.name}</TableCell>
-                    <TableCell>{questionSet.description}</TableCell>
-                    <TableCell>{questionSet.course}</TableCell>
-                    <TableCell>{questionSet.subTopics.join(", ")}</TableCell>
+                    <TableCell>
+                      {editingQuestionSet === questionSet.questionsetid ? (
+                        <TextField
+                          value={editedQuestionSet.name}
+                          onChange={(e) => setEditedQuestionSet({ ...editedQuestionSet, name: e.target.value })}
+                        />
+                      ) : (
+                        questionSet.name
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editingQuestionSet === questionSet.questionsetid ? (
+                        <TextField
+                          value={editedQuestionSet.description}
+                          onChange={(e) => setEditedQuestionSet({ ...editedQuestionSet, description: e.target.value })}
+                        />
+                      ) : (
+                        questionSet.description
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editingQuestionSet === questionSet.questionsetid ? (
+                        <Select
+                          value={editedQuestionSet.subTopic}
+                          onChange={(e) => setEditedQuestionSet({ ...editedQuestionSet, subTopics: e.target.value })}
+                          fullWidth
+                        >
+                          {subTopics.map((subTopic) => (
+                            <MenuItem key={subTopic.subtopicid} value={subTopic.subtopicid}>
+                              {subTopic.subtopic_name}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      ) : (
+                        subTopics.find((subTopic) => subTopic.subtopicid === questionSet.subTopic)?.subtopic_name || ""
+                      )}
+                    </TableCell>
+
+                    <TableCell>
+                      {editingQuestionSet === questionSet.questionsetid ? (
+                        <>
+                          <Button onClick={() => handleSaveQuestionSet(questionSet.questionsetid)}>Save</Button>
+                          <Button onClick={handleCancelQuestionSetEdit}>Cancel</Button>
+                        </>
+                      ) : (
+                        <Button onClick={() => handleEditQuestionSet(questionSet)}>Edit</Button>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -621,28 +812,82 @@ const CourseManagement = () => {
                   <TableCell sx={{ fontWeight: "bold" }}>Answer</TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Explanation</TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Difficulty Level</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Associated Sub Topics</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Associated Courses</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Associated Question Banks</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {questions.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((question) => (
-                  <TableRow key={question.id}>
+                  <TableRow key={question.questionid}>
                     <TableCell>
                       <Checkbox
-                        checked={selectedItems.some((item) => item.id === question.id && item.type === "question")}
-                        onChange={() => handleSelectItem(question.id, "question")}
+                        checked={selectedItems.some((item) => item.id === question.questionid && item.type === "question")}
+                        onChange={() => handleSelectItem(question.questionid, "question")}
                       />
                     </TableCell>
-                    <TableCell>{question.name}</TableCell>
-                    <TableCell>{question.options}</TableCell>
-                    <TableCell>{question.correct_answer}</TableCell>
-                    <TableCell>{question.explanation}</TableCell>
-                    <TableCell>{question.difficulty}</TableCell>
-                    <TableCell>{question.subTopics.join(", ")}</TableCell>
-                    <TableCell>{question.courses.join(", ")}</TableCell>
-                    <TableCell>{question.questionBanks.join(", ")}</TableCell>
+                    <TableCell>
+                      {editingQuestion === question.questionid ? (
+                        <TextField
+                          value={editedQuestion.question_text}
+                          onChange={(e) => setEditedQuestion({ ...editedQuestion, name: e.target.value })}
+                        />
+                      ) : (
+                        question.question_text
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editingQuestion === question.questionid ? (
+                        <TextField
+                          value={editedQuestion.options}
+                          onChange={(e) => setEditedQuestion({ ...editedQuestion, options: e.target.value })}
+                        />
+                      ) : (
+                        question.options
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editingQuestion === question.questionid ? (
+                        <TextField
+                          value={editedQuestion.correct_answer}
+                          onChange={(e) => setEditedQuestion({ ...editedQuestion, correct_answer: e.target.value })}
+                        />
+                      ) : (
+                        question.correct_answer
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editingQuestion === question.questionid ? (
+                        <TextField
+                          value={editedQuestion.explanation}
+                          onChange={(e) => setEditedQuestion({ ...editedQuestion, explanation: e.target.value })}
+                        />
+                      ) : (
+                        question.explanation
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editingQuestion === question.questionid ? (
+                        <Select
+                          value={editedQuestion.difficulty}
+                          onChange={(e) => setEditedQuestion({ ...editedQuestion, difficulty: e.target.value })}
+                          fullWidth
+                        >
+                          <MenuItem value="easy">Easy</MenuItem>
+                          <MenuItem value="medium">Medium</MenuItem>
+                          <MenuItem value="hard">Hard</MenuItem>
+                        </Select>
+                      ) : (
+                        question.difficulty
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editingQuestion === question.questionid ? (
+                        <>
+                          <Button onClick={() => handleSaveQuestion(question.questionid)}>Save</Button>
+                          <Button onClick={handleCancelQuestionEdit}>Cancel</Button>
+                        </>
+                      ) : (
+                        <Button onClick={() => handleEditQuestion(question)}>Edit</Button>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -675,16 +920,19 @@ const CourseManagement = () => {
         onCreate={handleCreateItem}
         fieldsOfStudy={fieldsOfStudy}
       />
-      <SubTopicDialog open={openDialog && dialogType === "subTopic"} onClose={handleCloseDialog} onCreate={handleCreateItem} />
-      <QuestionSetDialog open={openDialog && dialogType === "questionSet"} onClose={handleCloseDialog} onCreate={handleCreateItem} />
-      <QuestionDialog
-        open={openDialog && dialogType === "question"}
+      <SubTopicDialog
+        open={openDialog && dialogType === "subTopic"}
         onClose={handleCloseDialog}
         onCreate={handleCreateItem}
         courses={courses}
-        subTopics={subTopics}
-        questionBanks={questionSets}
       />
+      <QuestionSetDialog
+        open={openDialog && dialogType === "questionSet"}
+        onClose={handleCloseDialog}
+        onCreate={handleCreateItem}
+        subTopics={subTopics}
+      />
+      <QuestionDialog open={openDialog && dialogType === "question"} onClose={handleCloseDialog} onCreate={handleCreateItem} />
       <FieldOfStudyDialog open={openDialog && dialogType === "fieldOfStudy"} onClose={handleCloseDialog} onCreate={handleCreateItem} />
     </Box>
   );

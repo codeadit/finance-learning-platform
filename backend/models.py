@@ -1,5 +1,6 @@
-from flask_mongoengine import MongoEngine
 from datetime import datetime
+
+from flask_mongoengine import MongoEngine
 
 db = MongoEngine()
 
@@ -36,17 +37,17 @@ class Subtopic(db.Document):
 class Questions(db.Document):
     questionid = db.StringField(required=True, unique=True)
     question_text = db.StringField(required=True)
-    options = db.ListField(db.StringField(), required=True)
+    options = db.StringField(required=True)
     correct_answer = db.StringField(required=True)
     difficulty = db.StringField(required=True)
     explanation = db.StringField()
 
 class QuestionSet(db.Document):
     questionsetid = db.StringField(required=True, unique=True)
-    title = db.StringField(required=True)
+    name = db.StringField(required=True)
     description = db.StringField()
     subtopic = db.ReferenceField(Subtopic, required=True)
-    questions = db.ListField(db.ReferenceField(Questions), required=True)
+    questions = db.ListField(db.ReferenceField(Questions))
 
 # These define how the user interacts with the course
 class QuestionProgress(db.Document):

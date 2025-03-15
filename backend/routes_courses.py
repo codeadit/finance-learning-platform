@@ -101,32 +101,32 @@ def delete_courses():
     return jsonify({'message': 'Course deleted successfully', 'ids_deleted': ids_deleted, 'ids_not_found': ids_not_found}), 200
 
 #create a new sub-topic
-@courses_bp.route('/subtopic', methods=['POST'])
+@courses_bp.route('/subtopics', methods=['POST'])
 @jwt_required()
 def create_subtopic():
     data = request.get_json()
-    subtopic_name = data.get('subtopic_name')
-    subtopic_description = data.get('subtopic_description')
+    subtopic_name = data.get('name')
+    subtopic_description = data.get('description')
     courseid = data.get('courseid')
 
     if not subtopic_name or subtopic_description is None or courseid is None:
         return jsonify({'error': 'Missing required fields'}), 400
 
     subtopicid = subtopic_name.lower().replace(" ", "_");   
-    if Course.objects(subtopicid=subtopicid).first():
+    if Subtopic.objects(subtopicid=subtopicid).first():
         return jsonify({'error': 'Subtopic already exists'}), 400
     
     course = Course.objects(courseid=courseid).first()
     if not course:
         return jsonify({'error': 'Course not found'}), 404
 
-    course = Subtopic(subtopicid=subtopicid, subtopic_name=subtopic_name, subtopic_description=subtopic_description, course=course)
-    course.save()
+    subtopic = Subtopic(subtopicid=subtopicid, subtopic_name=subtopic_name, subtopic_description=subtopic_description, course=course)
+    subtopic.save()
 
     return jsonify({'message': 'Subtopic created successfully'}), 201
 
 # Update Subtopic
-@courses_bp.route('/subtopic/<subtopic_id>', methods=['PUT'])
+@courses_bp.route('/subtopics/<subtopic_id>', methods=['PUT'])
 @jwt_required()
 def update_subtopic(subtopic_id):
     data = request.get_json()
@@ -141,7 +141,7 @@ def update_subtopic(subtopic_id):
     if not subtopic:
         return jsonify({'error': 'Subtopic not found'}), 404
 
-    course = Course.objects(courseid=course_id).first()
+    course = Course.objects(courseid=courseid).first()
     if not course:
         return jsonify({'error': 'Course not found'}), 404
 
@@ -152,11 +152,16 @@ def update_subtopic(subtopic_id):
 @courses_bp.route('/subtopics', methods=['GET'])
 @jwt_required()
 def get_subtopics():
-    subtopics = Subtopic.objects()
-    return jsonify(subtopics), 200
+    subTopics = Subtopic.objects().select_related()
+    subTopics_with_courseid = []
+    for subTopic in subTopics:
+        subtopic_dict = subTopic.to_mongo().to_dict()
+        subtopic_dict['courseid'] = str(subTopic.course.courseid) if subTopic.course else None
+        subTopics_with_courseid.append(subtopic_dict)
+    return json_util.dumps(subTopics_with_courseid), 200
 
-#delete Course
-@courses_bp.route('/subtopic', methods=['DELETE'])
+#delete sub-topic
+@courses_bp.route('/subtopics', methods=['DELETE'])
 @jwt_required()
 def delete_subtopic():
     data = request.get_json()
@@ -180,6 +185,138 @@ def delete_subtopic():
     return jsonify({'message': 'Subtopic deleted successfully', 'ids_deleted': ids_deleted, 'ids_not_found': ids_not_found}), 200
 
 
+
+
+#create a new question set
+@courses_bp.route('/questionSets', methods=['POST'])
+@jwt_required()
+def create_questionSet():
+    data = request.get_json()
+    qSet_name = data.get('name')
+    qSet_Description = data.get('description')
+    subTopicId = data.get('subtopicid')
+
+    if not qSet_name or qSet_Description is None or subTopicId is None:
+        return jsonify({'error': 'Missing required fields'}), 400
+
+    qSetId = qSet_name.lower().replace(" ", "_");   
+    if QuestionSet.objects(questionsetid=qSetId).first():
+        return jsonify({'error': 'Question Set already exists'}), 400
+    
+    subTopicRef = Subtopic.objects(subtopicid=subTopicId).first()
+    if not subTopicRef:
+        return jsonify({'error': 'Subtopic not found'}), 404
+
+    qSet = QuestionSet(questionsetid=qSetId, name=qSet_name, description=qSet_Description, subtopic=subTopicRef)
+    qSet.save()
+
+    return jsonify({'message': 'Question Set created successfully'}), 201
+
+#get a list of all question sets
+@courses_bp.route('/questionsets', methods=['GET'])
+@jwt_required()
+def get_questionsets():
+    qSets = QuestionSet.objects().select_related()
+    qSets_with_subTopicid = []
+    for qSet in qSets:
+        qSet_dict = qSet.to_mongo().to_dict()
+        qSet_dict['subTopic'] = str(qSet.subtopic.subtopicid) if qSet.subtopic else None
+        qSets_with_subTopicid.append(qSet_dict)
+    return json_util.dumps(qSets_with_subTopicid), 200
+
+# Update question sets
+@courses_bp.route('/questionsets/<questionset_id>', methods=['PUT'])
+@jwt_required()
+def update_qSet(questionset_id):
+    data = request.get_json()
+    name = data.get('name')
+    description = data.get('description')
+    subtopicid = data.get('subTopics')
+
+    if not name or not description or not subtopicid:
+        return jsonify({'error': 'Missing required fields'}), 400
+    
+    qSet = QuestionSet.objects(questionsetid=questionset_id).first()
+    if not qSet:
+        return jsonify({'error': 'Question Set not found'}), 404
+
+    subTopicRef = Subtopic.objects(subtopicid=subtopicid).first()
+    if not subTopicRef:
+        return jsonify({'error': 'Course not found'}), 404
+
+    qSet.update(name=name, description=description, subtopic=subTopicRef)
+    return jsonify({'message': 'Question Set updated successfully'}), 200
+
+
+#delete question set
+@courses_bp.route('/questionsets', methods=['DELETE'])
+@jwt_required()
+def delete_questionset():
+    data = request.get_json()
+    ids = data.get('ids')
+
+    if not ids:
+        return jsonify({'error': 'Missing required fields'}), 400
+    
+    idList = ids.split(",")
+    ids_deleted = []
+    ids_not_found = []
+
+    for i in idList:
+        subtopic = QuestionSet.objects(questionsetid=i).first()
+        if subtopic:
+            ids_deleted.append(i)
+            subtopic.delete()
+        else:
+            ids_not_found.append(i)
+
+    return jsonify({'message': 'Question Set deleted successfully', 'ids_deleted': ids_deleted, 'ids_not_found': ids_not_found}), 200
+
+# CRUD operations for questions
+#create a new question
+@courses_bp.route('/questions', methods=['POST'])
+@jwt_required()
+def create_question():
+    data = request.get_json()
+    question_text = data.get('name')
+    options = data.get('options')
+    correct_answer = data.get('correct_answer')
+    difficulty = data.get('difficulty')
+    explanation = data.get('explanation')
+
+    if not question_text or not options or not correct_answer or not difficulty:
+        return jsonify({'error': 'Missing required fields'}), 400
+    
+    questionid = question_text.lower().replace(" ", "_");
+    if Questions.objects(questionid=questionid).first():
+        return jsonify({'error': 'Question already exists'}), 400
+    
+    question = Questions(questionid=questionid, question_text=question_text, options=options, correct_answer=correct_answer, difficulty=difficulty, explanation=explanation)
+    question.save()
+
+    return jsonify({'message': 'Question created successfully'}), 201
+
+# Update question
+@courses_bp.route('/questions/<question_id>', methods=['PUT'])
+@jwt_required()
+def update_question(question_id):
+    data = request.get_json()
+    question_text = data.get('question_text')
+    options = data.get('options')
+    correct_answer = data.get('correct_answer')
+    difficulty = data.get('difficulty')
+    explanation = data.get('explanation')
+
+    if not question_text or not options or not correct_answer or not difficulty:
+        return jsonify({'error': 'Missing required fields'}), 400
+
+    qRef = Questions.objects(questionid=question_id).first()
+    if not qRef:
+        return jsonify({'error': 'Question not found'}), 404
+
+    qRef.update(question_text=question_text, options=options, correct_answer=correct_answer, difficulty=difficulty, explanation=explanation)
+    return jsonify({'message': 'Question updated successfully'}), 200
+
 #get a list of all questions
 @courses_bp.route('/questions', methods=['GET'])
 @jwt_required()
@@ -187,12 +324,29 @@ def get_questions():
     questions = Questions.objects()
     return jsonify(questions), 200
 
-#get a list of all question sets
-@courses_bp.route('/questionsets', methods=['GET'])
+# delete question
+@courses_bp.route('/questions', methods=['DELETE'])
 @jwt_required()
-def get_questionsets():
-    questionsets = QuestionSet.objects()
-    return jsonify(questionsets), 200
+def delete_questions():
+    data = request.get_json()
+    ids = data.get('ids')
+
+    if not ids:
+        return jsonify({'error': 'Missing required fields'}), 400
+    
+    idList = ids.split(",")
+    ids_deleted = []
+    ids_not_found = []
+
+    for i in idList:
+        fos = Questions.objects(questionid=i).first()
+        if fos:
+            ids_deleted.append(i)
+            fos.delete()
+        else:
+            ids_not_found.append(i)
+
+    return jsonify({'message': 'Questions deleted successfully', 'ids_deleted': ids_deleted, 'ids_not_found': ids_not_found}), 200
 
 # CRUD operations for Field of Study
 

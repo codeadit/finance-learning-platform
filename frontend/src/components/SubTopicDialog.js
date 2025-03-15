@@ -1,10 +1,25 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+} from "@mui/material";
+import axios from "axios";
 import React, { useState } from "react";
 
-const SubTopicDialog = ({ open, onClose, onCreate }) => {
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
+const SubTopicDialog = ({ open, onClose, onCreate, courses }) => {
   const [subTopic, setSubTopic] = useState({
     name: "",
     description: "",
+    courseid: "",
   });
 
   const handleChange = (e) => {
@@ -15,9 +30,19 @@ const SubTopicDialog = ({ open, onClose, onCreate }) => {
     }));
   };
 
-  const handleCreate = () => {
-    onCreate(subTopic);
-    onClose();
+  const handleCreate = async () => {
+    try {
+      const token = localStorage.getItem("authUser.token");
+      const response = await axios.post(`${API_BASE_URL}/courses/subtopics`, subTopic, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      onCreate(response.data);
+      onClose();
+    } catch (error) {
+      console.error("Error creating Sub Topic:", error);
+    }
   };
 
   return (
@@ -43,6 +68,16 @@ const SubTopicDialog = ({ open, onClose, onCreate }) => {
           value={subTopic.description}
           onChange={handleChange}
         />
+        <FormControl fullWidth margin="dense">
+          <InputLabel>Course</InputLabel>
+          <Select name="courseid" value={subTopic.courseid} onChange={handleChange}>
+            {courses.map((course) => (
+              <MenuItem key={course.courseid} value={course.courseid}>
+                {course.course_name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="primary">
