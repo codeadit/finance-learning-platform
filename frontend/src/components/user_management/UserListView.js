@@ -13,12 +13,12 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Swal from "sweetalert2";
-import { convertBackendToFrontendUserType, convertFrontEndToBackendUserType, UserTypes } from "../../constants/UserTypes"; // Import user types
+import { UserTypes } from "../../constants/UserTypes"; // Import user types
 import { backgroundStyle } from "../../constants/styles";
+import userService from "../../services/userService"; // Import user service
+import { handleError } from "../../utils/HandleAxiosError";
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -30,43 +30,14 @@ const UsersListView = () => {
 
   // Fetch user data from the backend
   const fetchUsers = async () => {
+    const token = localStorage.getItem("authUser.token");
     try {
-      const token = localStorage.getItem("authUser.token");
-      await axios
-        .get(`${API_BASE_URL}/user/users`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        .then((res) => {
-          // need to convert backend user type to frontend user type
-          res.data.forEach((user) => {
-            console.log("user", user);
-            console.log("user.userType", user.userType);
-            user.userType = convertBackendToFrontendUserType(user.userType);
-          });
-
-          setUsers(res.data);
-          setLoading(false); // Set loading to false after data is fetched
-        })
-        .catch((res) => {
-          console.error("Error fetching users:", res);
-          setLoading(false); // Set loading to false after data is fetched
-        }); // need to wait till the data is fetched
+      const usersData = await userService.getUsers(token);
+      setUsers(usersData);
     } catch (error) {
-      if (error.response && error.response.status === 401) {
-        Swal.fire({
-          icon: "warning",
-          title: "Login Expired",
-          text: "Your login session has expired. Please log in again.",
-          confirmButtonText: "OK",
-        }).then(() => {
-          navigate("/login");
-        });
-      } else {
-        console.error("Error fetching users:", error);
-        setLoading(false); // Set loading to false after data is fetched
-      }
+      handleError(error, navigate, "Error fetching users: ");
+    } finally {
+      setLoading(false); // Set loading to false after data is fetched
     }
   };
 
@@ -75,22 +46,13 @@ const UsersListView = () => {
   }, []);
 
   const handleUserTypeChange = async (userId, newType) => {
+    const token = localStorage.getItem("authUser.token");
+
     try {
-      const token = localStorage.getItem("authUser.token");
-      const user = users.find((user) => user.username === userId);
-      const backendType = convertFrontEndToBackendUserType(newType);
-      await axios.put(
-        `${API_BASE_URL}/user/usertype`,
-        { email: user.email, userType: backendType },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await userService.updateUserType(users, userId, newType, token);
       await fetchUsers();
     } catch (error) {
-      console.error("Error updating user type:", error);
+      handleError(error, navigate, "Error updating user type: ");
     }
   };
 
@@ -99,30 +61,21 @@ const UsersListView = () => {
       return;
     }
 
-    console.log("userId", userId);
     setSelectedUsers((prevSelected) =>
       prevSelected.includes(userId) ? prevSelected.filter((id) => id !== userId) : [...prevSelected, userId]
     );
-    console.log("selectedUsers", selectedUsers);
   };
 
   const handleDeleteUsers = async () => {
-    console.log("selectedUsers", selectedUsers);
+    const token = localStorage.getItem("authUser.token");
+
     try {
-      const token = localStorage.getItem("authUser.token");
-      // make a comma separated string of selected users
       const idtoDelete = selectedUsers.join(",");
-      console.log("idtoDelete", idtoDelete);
-      await axios.delete(`${API_BASE_URL}/user/users`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        data: { userIds: idtoDelete },
-      });
+      await userService.deleteUsers(idtoDelete, token);
       setUsers((prevUsers) => prevUsers.filter((user) => !selectedUsers.includes(user.username)));
       setSelectedUsers([]); // Clear selected users after deletion
     } catch (error) {
-      console.error("Error deleting users:", error);
+      handleError(error, navigate, "Error deleting users: ");
     }
   };
 

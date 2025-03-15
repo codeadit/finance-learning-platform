@@ -23,11 +23,11 @@ import { useNavigate } from "react-router-dom";
 import { backgroundStyle } from "../../constants/styles";
 import fieldsOfStudyService from "../../services/fieldsOfStudyService";
 import { handleError } from "../../utils/HandleAxiosError";
+import CourseDialog from "./CourseDialog";
+import FieldOfStudyDialog from "./FieldofStudyDialog"; // Import the new dialog component
 import QuestionDialog from "./QuestionDialog";
 import QuestionSetDialog from "./QuestionSetDialog";
 import SubTopicDialog from "./SubTopicDialog";
-import CourseDialog from "./CourseDialog";
-import FieldOfStudyDialog from "./FieldofStudyDialog"; // Import the new dialog component
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -136,7 +136,7 @@ const CourseManagement = () => {
       fetchData();
       setEditingFOS(null);
     } catch (error) {
-      console.error("Error updating field of study:", error);
+      handleError(error, navigate, "Error updating field of study:");
     }
   };
 
@@ -167,7 +167,7 @@ const CourseManagement = () => {
       fetchData();
       setEditingCourse(null);
     } catch (error) {
-      console.error("Error updating course:", error);
+      handleError(error, navigate, "Error updating course:");
     }
   };
 
@@ -195,7 +195,7 @@ const CourseManagement = () => {
       fetchData();
       setEditingSubTopic(null);
     } catch (error) {
-      console.error("Error updating sub topic:", error);
+      handleError(error, navigate, "Error updating sub topic:");
     }
   };
 
@@ -224,7 +224,7 @@ const CourseManagement = () => {
       fetchData();
       setEditingQuestionSet(null);
     } catch (error) {
-      console.error("Error updating question set:", error);
+      handleError(error, navigate, "Error updating question set:");
     }
   };
 
@@ -254,7 +254,7 @@ const CourseManagement = () => {
       fetchData();
       setEditingQuestion(null);
     } catch (error) {
-      console.error("Error updating question:", error);
+      handleError(error, navigate, "Error updating question:");
     }
   };
 
@@ -351,7 +351,7 @@ const CourseManagement = () => {
       fetchData();
       setSelectedItems([]);
     } catch (error) {
-      console.error("Error deleting items:", error);
+      handleError(error, navigate, "Error deleting items:");
     }
   };
 

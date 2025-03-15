@@ -1,6 +1,6 @@
 import Swal from "sweetalert2";
 
-export const handleError = (error, navigate) => {
+export const handleError = (error, navigate, errorMessage = "Error fetching data: ") => {
   if (error.response && error.response.status === 401) {
     Swal.fire({
       icon: "warning",
@@ -11,6 +11,6 @@ export const handleError = (error, navigate) => {
       navigate("/login");
     });
   } else {
-    console.error("Error fetching data:", error);
+    console.error(errorMessage, error);
   }
 };
