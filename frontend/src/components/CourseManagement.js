@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Checkbox,
+  ListItemText,
   MenuItem,
   Paper,
   Select,
@@ -215,7 +216,8 @@ const CourseManagement = () => {
     setEditedQuestionSet({
       name: questionSet.name,
       description: questionSet.description,
-      subTopics: questionSet.subTopics,
+      subTopic: questionSet.subTopic,
+      questions: questionSet.questions || [], // Ensure the value is an array
     });
   };
 
@@ -712,6 +714,7 @@ const CourseManagement = () => {
                   <TableCell sx={{ fontWeight: "bold" }}>Question Set Name</TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Description</TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Associated Sub Topics</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Questions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -752,12 +755,32 @@ const CourseManagement = () => {
                         >
                           {subTopics.map((subTopic) => (
                             <MenuItem key={subTopic.subtopicid} value={subTopic.subtopicid}>
-                              {subTopic.subtopic_name}
+                              {questionSet.subTopic}
                             </MenuItem>
                           ))}
                         </Select>
                       ) : (
                         subTopics.find((subTopic) => subTopic.subtopicid === questionSet.subTopic)?.subtopic_name || ""
+                      )}
+                    </TableCell>
+
+                    <TableCell>
+                      {editingQuestionSet === questionSet.questionsetid ? (
+                        <Select
+                          value={editedQuestionSet.questions || []} // Ensure the value is an array
+                          onChange={(e) => setEditedQuestionSet({ ...editedQuestionSet, questions: e.target.value })}
+                          multiple
+                          fullWidth
+                        >
+                          {questions.map((question) => (
+                            <MenuItem key={question.questionid} value={question.questionid}>
+                              <Checkbox checked={editedQuestionSet.questions.indexOf(question.questionid) > -1} />
+                              <ListItemText primary={question.question_text} />
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      ) : (
+                        questionSet.questions.map((q) => q).join(", ")
                       )}
                     </TableCell>
 
@@ -870,9 +893,9 @@ const CourseManagement = () => {
                           onChange={(e) => setEditedQuestion({ ...editedQuestion, difficulty: e.target.value })}
                           fullWidth
                         >
-                          <MenuItem value="easy">Easy</MenuItem>
-                          <MenuItem value="medium">Medium</MenuItem>
-                          <MenuItem value="hard">Hard</MenuItem>
+                          <MenuItem value="Easy">Easy</MenuItem>
+                          <MenuItem value="Medium">Medium</MenuItem>
+                          <MenuItem value="Hard">Hard</MenuItem>
                         </Select>
                       ) : (
                         question.difficulty

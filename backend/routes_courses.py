@@ -221,7 +221,12 @@ def get_questionsets():
     for qSet in qSets:
         qSet_dict = qSet.to_mongo().to_dict()
         qSet_dict['subTopic'] = str(qSet.subtopic.subtopicid) if qSet.subtopic else None
+
+        for qs in qSet.questions:
+            qSet_dict['questions'] = [str(q.questionid) for q in qSet.questions if q]
+
         qSets_with_subTopicid.append(qSet_dict)
+
     return json_util.dumps(qSets_with_subTopicid), 200
 
 # Update question sets
@@ -231,7 +236,16 @@ def update_qSet(questionset_id):
     data = request.get_json()
     name = data.get('name')
     description = data.get('description')
-    subtopicid = data.get('subTopics')
+    subtopicid = data.get('subTopic')
+    questions = data.get('questions')
+
+    # Ensure questions is a list of ObjectId references
+    question_references = []
+    if questions:
+        for question_id in questions:
+            question = Questions.objects(questionid=question_id).first()
+            if question:
+                question_references.append(question)
 
     if not name or not description or not subtopicid:
         return jsonify({'error': 'Missing required fields'}), 400
@@ -244,7 +258,7 @@ def update_qSet(questionset_id):
     if not subTopicRef:
         return jsonify({'error': 'Course not found'}), 404
 
-    qSet.update(name=name, description=description, subtopic=subTopicRef)
+    qSet.update(name=name, description=description, subtopic=subTopicRef, questions=question_references)
     return jsonify({'message': 'Question Set updated successfully'}), 200
 
 
