@@ -21,6 +21,7 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { backgroundStyle } from "../constants/styles";
+import fieldsOfStudyService from "../services/fieldsOfStudyService";
 import { handleError } from "../utils/HandleAxiosError";
 import CourseDialog from "./CourseDialog";
 import FieldOfStudyDialog from "./FieldofStudyDialog"; // Import the new dialog component
@@ -80,12 +81,7 @@ const CourseManagement = () => {
             Authorization: `Bearer ${token}`,
           },
         }),
-        axios.get(`${API_BASE_URL}/courses/fields_of_study`, {
-          // Fetch fields of study
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }),
+        fieldsOfStudyService.getFieldsOfStudy(token),
         axios.get(`${API_BASE_URL}/courses/questions`, {
           // Fetch fields of study
           headers: {
@@ -102,9 +98,9 @@ const CourseManagement = () => {
       if (questionSetRes.data !== undefined) {
         setQuestionSets(questionSetRes.data);
       }
-      if (fieldsOfStudyRes.data !== undefined) {
+      if (fieldsOfStudyRes !== undefined) {
         // Set fields of study state
-        setFieldsOfStudy(fieldsOfStudyRes.data);
+        setFieldsOfStudy(fieldsOfStudyRes);
       }
       if (questionsRes.data !== undefined) {
         setQuestions(questionsRes.data);
@@ -136,11 +132,7 @@ const CourseManagement = () => {
   const handleSaveFOS = async (fieldid) => {
     try {
       const token = localStorage.getItem("authUser.token");
-      await axios.put(`${API_BASE_URL}/courses/fields_of_study/${fieldid}`, editedFOS, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await fieldsOfStudyService.updateFieldOfStudy(fieldid, editedFOS, token);
       fetchData();
       setEditingFOS(null);
     } catch (error) {
@@ -350,12 +342,7 @@ const CourseManagement = () => {
           });
           break;
         case "fieldOfStudy":
-          await axios.delete(`${API_BASE_URL}/courses/fields_of_study`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            data: { ids },
-          });
+          await fieldsOfStudyService.deleteFieldsOfStudy(ids, token);
           break;
         default:
           break;

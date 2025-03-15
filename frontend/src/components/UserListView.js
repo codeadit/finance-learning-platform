@@ -146,6 +146,7 @@ const UsersListView = () => {
               <TableCell sx={{ fontWeight: "bold" }}>User Type</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Created On</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Last Login</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Field Of Study</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>

@@ -1,8 +1,6 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography } from "@mui/material";
-import axios from "axios";
 import React, { useState } from "react";
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+import fieldsOfStudyService from "../services/fieldsOfStudyService";
 
 const FieldofStudyDialog = ({ open, onClose, onCreate }) => {
   const [field, setField] = useState({
@@ -22,11 +20,7 @@ const FieldofStudyDialog = ({ open, onClose, onCreate }) => {
   const handleCreate = async () => {
     try {
       const token = localStorage.getItem("authUser.token");
-      const response = await axios.post(`${API_BASE_URL}/courses/fields_of_study`, field, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fieldsOfStudyService.createFieldOfStudy(field, token);
       onCreate(response.data);
       onClose();
     } catch (error) {
