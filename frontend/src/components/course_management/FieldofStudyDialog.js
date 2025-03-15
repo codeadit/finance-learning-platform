@@ -1,6 +1,6 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography } from "@mui/material";
 import React, { useState } from "react";
-import fieldsOfStudyService from "../services/fieldsOfStudyService";
+import fieldsOfStudyService from "../../services/fieldsOfStudyService";
 
 const FieldofStudyDialog = ({ open, onClose, onCreate }) => {
   const [field, setField] = useState({

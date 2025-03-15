@@ -4,7 +4,7 @@ import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { backgroundStyle } from "../constants/styles";
+import { backgroundStyle } from "../../constants/styles";
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 

@@ -20,14 +20,14 @@ import {
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { backgroundStyle } from "../constants/styles";
-import fieldsOfStudyService from "../services/fieldsOfStudyService";
-import { handleError } from "../utils/HandleAxiosError";
-import CourseDialog from "./CourseDialog";
-import FieldOfStudyDialog from "./FieldofStudyDialog"; // Import the new dialog component
+import { backgroundStyle } from "../../constants/styles";
+import fieldsOfStudyService from "../../services/fieldsOfStudyService";
+import { handleError } from "../../utils/HandleAxiosError";
 import QuestionDialog from "./QuestionDialog";
 import QuestionSetDialog from "./QuestionSetDialog";
 import SubTopicDialog from "./SubTopicDialog";
+import CourseDialog from "./CourseDialog";
+import FieldOfStudyDialog from "./FieldofStudyDialog"; // Import the new dialog component
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 

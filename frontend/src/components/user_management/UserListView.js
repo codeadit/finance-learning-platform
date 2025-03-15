@@ -17,8 +17,8 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { convertBackendToFrontendUserType, convertFrontEndToBackendUserType, UserTypes } from "../constants/UserTypes"; // Import user types
-import { backgroundStyle } from "../constants/styles";
+import { convertBackendToFrontendUserType, convertFrontEndToBackendUserType, UserTypes } from "../../constants/UserTypes"; // Import user types
+import { backgroundStyle } from "../../constants/styles";
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 

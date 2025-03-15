@@ -11,10 +11,10 @@ import React, { useEffect, useState } from "react";
 import { Link, Route, Routes, useNavigate } from "react-router-dom";
 import { haveUserManagementAccess } from "../constants/UserTypes";
 import About from "./About";
-import CourseManagement from "./CourseManagement"; // Import the new component
+import CourseManagement from "./course_management/CourseManagement"; // Import the new component
 import "./LearningHome.css";
 import LearningLandingPage from "./LearningLandingPage";
-import UsersListView from "./UserListView"; // Import the new component
+import UsersListView from "./user_management/UserListView"; // Import the new component
 
 const LearningHome = () => {
   const navigate = useNavigate();
