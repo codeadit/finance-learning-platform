@@ -222,9 +222,17 @@ def get_questionsets():
         qSet_dict = qSet.to_mongo().to_dict()
         qSet_dict['subTopic'] = str(qSet.refSubTopicId.refId) if qSet.refSubTopicId else None
 
+        qRefs = []
         for qs in qSet.refQuestionIds:
-            qSet_dict['questions'] = [str(q.refId) for q in qSet.refQuestionIds if q]
+            # if qs is not Questions object, exit the loop
+            if not isinstance(qs, Questions):
+                continue
+            
+            qsRefObject = Questions.objects(refId=qs.refId).first()
+            if(qsRefObject):
+                qRefs.append(str(qsRefObject.refId))
 
+        qSet_dict['questions'] = qRefs
         qSets_with_subTopicid.append(qSet_dict)
 
     return json_util.dumps(qSets_with_subTopicid), 200
