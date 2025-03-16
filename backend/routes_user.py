@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import (create_access_token, get_jwt_identity,
                                 jwt_required)
-from models import User
+from models import FieldOfStudy, User
 from werkzeug.security import check_password_hash, generate_password_hash
 
 user_bp = Blueprint('user', __name__)
@@ -68,6 +68,7 @@ def get_users():
             'createdAt': user.created_at,
             'lastLogin': user.created_at,
             'userType': user.user_type,
+            'field_of_study': user.field_of_study.fieldid if user.field_of_study else None
         })
     return jsonify(users_list), 200
 
@@ -131,6 +132,28 @@ def change_user_type():
     if user:
         user.update(user_type=user_type)
         return jsonify({'message': 'User type updated successfully'}), 200
+    else:
+        return jsonify({'error': 'User not found'}), 404
+    
+# change FOS
+@user_bp.route('/userFOS', methods=['PUT'])
+@jwt_required()
+def change_user_FOS():
+    if not is_founder():
+        return jsonify({'error': 'Unauthorized access'}), 403
+    
+    data = request.get_json()
+    email = data.get('email')
+    user = User.objects(email=email).first()
+    fieldid = data.get('fos')
+
+    fos = FieldOfStudy.objects(fieldid=fieldid).first()
+    if not fos:
+        return jsonify({'error': 'Field of Study not found'}), 404
+    
+    if user:
+        user.update(field_of_study=fos)
+        return jsonify({'message': 'User FOS updated successfully'}), 200
     else:
         return jsonify({'error': 'User not found'}), 404
     

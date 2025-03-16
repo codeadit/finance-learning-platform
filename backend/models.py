@@ -11,6 +11,7 @@ class User(db.Document):
     password = db.StringField(required=True)
     created_at = db.DateTimeField(default=datetime.utcnow)
     user_type = db.StringField(required=True) # Can be 'student', 'teacher' or 'founder'
+    field_of_study = db.ReferenceField('FieldOfStudy') # Can be linked to a field of study
 
 #create a field of study model, courses will be linked to this
 class FieldOfStudy(db.Document):

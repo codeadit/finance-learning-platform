@@ -1,12 +1,10 @@
 import HomeIcon from "@mui/icons-material/Home";
 import { Box, Button, TextField } from "@mui/material";
-import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { backgroundStyle } from "../../constants/styles";
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+import userService from "../../services/userService";
 
 const Register = () => {
   const [formData, setFormData] = useState({ name: "", email: "", password: "", username: "" });
@@ -24,7 +22,7 @@ const Register = () => {
   const onSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(`${API_BASE_URL}/user/register`, formData);
+      const res = await userService.registerUser(formData);
       console.log(res.data);
       if (res.data.message === "User already exists") {
         Swal.fire({

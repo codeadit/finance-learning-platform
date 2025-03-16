@@ -17,16 +17,16 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserTypes } from "../../constants/UserTypes"; // Import user types
 import { backgroundStyle } from "../../constants/styles";
+import fieldsOfStudyService from "../../services/fieldsOfStudyService";
 import userService from "../../services/userService"; // Import user service
 import { handleError } from "../../utils/HandleAxiosError";
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const UsersListView = () => {
   const [users, setUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]); // Add state for selected users
   const [loading, setLoading] = useState(true); // Add loading state
   const navigate = useNavigate();
+  const [fieldsOfStudyData, setFieldsOfStudyData] = useState([]); // Add state for fields of study data
 
   // Fetch user data from the backend
   const fetchUsers = async () => {
@@ -41,8 +41,20 @@ const UsersListView = () => {
     }
   };
 
+  const fetchFieldsofStudy = async () => {
+    const token = localStorage.getItem("authUser.token");
+    try {
+      const data = await fieldsOfStudyService.getFieldsOfStudy(token);
+      // store in state
+      setFieldsOfStudyData(data);
+    } catch (error) {
+      handleError(error, navigate, "Error fetching fields of study: ");
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
+    fetchFieldsofStudy();
   }, []);
 
   const handleUserTypeChange = async (userId, newType) => {
@@ -53,6 +65,17 @@ const UsersListView = () => {
       await fetchUsers();
     } catch (error) {
       handleError(error, navigate, "Error updating user type: ");
+    }
+  };
+
+  const handleFieldOfStudyChange = async (userId, newFOS) => {
+    const token = localStorage.getItem("authUser.token");
+
+    try {
+      await userService.updateFOS(users, userId, newFOS, token);
+      await fetchUsers();
+    } catch (error) {
+      handleError(error, navigate, "Error updating field of study: ");
     }
   };
 
@@ -121,6 +144,15 @@ const UsersListView = () => {
                 </TableCell>
                 <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                <TableCell>
+                  <Select value={user.fieldOfStudy} onChange={(e) => handleFieldOfStudyChange(user.username, e.target.value)}>
+                    {fieldsOfStudyData.map((field) => (
+                      <MenuItem key={field.fieldid} value={field.fieldid}>
+                        {field.field_name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
