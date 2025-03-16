@@ -242,7 +242,7 @@ const CourseManagement = () => {
   };
 
   const handleEditQuestion = (question) => {
-    setEditingQuestion(question.questionid);
+    setEditingQuestion(question.refId);
     setEditedQuestion({
       question_text: question.question_text,
       options: question.options,
@@ -551,7 +551,7 @@ const CourseManagement = () => {
                       {editingCourse === course.refId ? (
                         <Select
                           value={editedCourse.refFOSId_String}
-                          onChange={(e) => setEditedCourse({ ...editedCourse, fieldid: e.target.value })}
+                          onChange={(e) => setEditedCourse({ ...editedCourse, refFOSId_String: e.target.value })}
                           fullWidth
                         >
                           {fieldsOfStudy.map((field) => (
@@ -746,7 +746,7 @@ const CourseManagement = () => {
                       {editingQuestionSet === questionSet.refId ? (
                         <Select
                           value={editedQuestionSet.subTopic}
-                          onChange={(e) => setEditedQuestionSet({ ...editedQuestionSet, subTopics: e.target.value })}
+                          onChange={(e) => setEditedQuestionSet({ ...editedQuestionSet, subTopic: e.target.value })}
                           fullWidth
                         >
                           {subTopics.map((subTopic) => (
@@ -780,7 +780,12 @@ const CourseManagement = () => {
                           )}
                         </Select>
                       ) : Array.isArray(questionSet.questions) && questionSet.questions.length > 0 ? (
-                        questionSet.questions.map((q) => q).join(", ")
+                        questionSet.questions
+                          .map((questionId) => {
+                            const question = questions.find((q) => q.refId === questionId);
+                            return question ? question.question_text : "Unknown question";
+                          })
+                          .join(", ")
                       ) : (
                         "No questions available"
                       )}
@@ -841,15 +846,15 @@ const CourseManagement = () => {
               </TableHead>
               <TableBody>
                 {questions.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((question) => (
-                  <TableRow key={question.questionid}>
+                  <TableRow key={question.refId}>
                     <TableCell>
                       <Checkbox
-                        checked={selectedItems.some((item) => item.id === question.questionid && item.type === "question")}
-                        onChange={() => handleSelectItem(question.questionid, "question")}
+                        checked={selectedItems.some((item) => item.id === question.refId && item.type === "question")}
+                        onChange={() => handleSelectItem(question.refId, "question")}
                       />
                     </TableCell>
                     <TableCell>
-                      {editingQuestion === question.questionid ? (
+                      {editingQuestion === question.refId ? (
                         <TextField
                           value={editedQuestion.question_text}
                           onChange={(e) => setEditedQuestion({ ...editedQuestion, name: e.target.value })}
@@ -859,7 +864,7 @@ const CourseManagement = () => {
                       )}
                     </TableCell>
                     <TableCell>
-                      {editingQuestion === question.questionid ? (
+                      {editingQuestion === question.refId ? (
                         <TextField
                           value={editedQuestion.options}
                           onChange={(e) => setEditedQuestion({ ...editedQuestion, options: e.target.value })}
@@ -869,7 +874,7 @@ const CourseManagement = () => {
                       )}
                     </TableCell>
                     <TableCell>
-                      {editingQuestion === question.questionid ? (
+                      {editingQuestion === question.refId ? (
                         <TextField
                           value={editedQuestion.correct_answer}
                           onChange={(e) => setEditedQuestion({ ...editedQuestion, correct_answer: e.target.value })}
@@ -879,7 +884,7 @@ const CourseManagement = () => {
                       )}
                     </TableCell>
                     <TableCell>
-                      {editingQuestion === question.questionid ? (
+                      {editingQuestion === question.refId ? (
                         <TextField
                           value={editedQuestion.explanation}
                           onChange={(e) => setEditedQuestion({ ...editedQuestion, explanation: e.target.value })}
@@ -889,7 +894,7 @@ const CourseManagement = () => {
                       )}
                     </TableCell>
                     <TableCell>
-                      {editingQuestion === question.questionid ? (
+                      {editingQuestion === question.refId ? (
                         <Select
                           value={editedQuestion.difficulty}
                           onChange={(e) => setEditedQuestion({ ...editedQuestion, difficulty: e.target.value })}
@@ -904,9 +909,9 @@ const CourseManagement = () => {
                       )}
                     </TableCell>
                     <TableCell>
-                      {editingQuestion === question.questionid ? (
+                      {editingQuestion === question.refId ? (
                         <>
-                          <Button onClick={() => handleSaveQuestion(question.questionid)}>Save</Button>
+                          <Button onClick={() => handleSaveQuestion(question.refId)}>Save</Button>
                           <Button onClick={handleCancelQuestionEdit}>Cancel</Button>
                         </>
                       ) : (

@@ -69,21 +69,13 @@ const CourseDialog = ({ open, onClose, onCreate, fieldsOfStudy }) => {
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>Create Course</DialogTitle>
       <DialogContent>
-        <TextField
-          margin="dense"
-          label="Course Name"
-          type="text"
-          fullWidth
-          name="course_name"
-          value={course.name}
-          onChange={handleChange}
-        />
+        <TextField margin="dense" label="Course Name" type="text" fullWidth name="name" value={course.name} onChange={handleChange} />
         <TextField
           margin="dense"
           label="Course Description"
           type="text"
           fullWidth
-          name="course_description"
+          name="description"
           value={course.description}
           onChange={handleChange}
         />
