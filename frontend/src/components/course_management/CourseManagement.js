@@ -45,18 +45,18 @@ const CourseManagement = () => {
   const [tabIndex, setTabIndex] = useState(0); // Add state for tab index
   const navigate = useNavigate();
   const [editingFOS, setEditingFOS] = useState(null);
-  const [editedFOS, setEditedFOS] = useState({ field_name: "", field_description: "" });
+  const [editedFOS, setEditedFOS] = useState({ name: "", description: "" });
   const [editingCourse, setEditingCourse] = useState(null);
   const [editedCourse, setEditedCourse] = useState({
-    course_name: "",
-    course_description: "",
+    name: "",
+    description: "",
     agestart: "",
     ageend: "",
     free_course: false,
-    field_name: "",
+    name: "",
   });
   const [editingSubTopic, setEditingSubTopic] = useState(null);
-  const [editedSubTopic, setEditedSubTopic] = useState({ subtopic_name: "", subtopic_description: "", courseid: "" });
+  const [editedSubTopic, setEditedSubTopic] = useState({ name: "", description: "", refCourseId: "" });
   const [editingQuestionSet, setEditingQuestionSet] = useState(null);
   const [editedQuestionSet, setEditedQuestionSet] = useState({ name: "", description: "", subTopics: [] });
   const [editingQuestion, setEditingQuestion] = useState(null);
@@ -90,19 +90,24 @@ const CourseManagement = () => {
         }),
       ]);
       if (coursesRes.data !== undefined) {
+        console.log("courses", coursesRes.data);
         setCourses(coursesRes.data);
       }
       if (subTopicsRes.data !== undefined) {
+        console.log("sub topics", subTopicsRes.data);
         setSubTopics(subTopicsRes.data);
       }
       if (questionSetRes.data !== undefined) {
+        console.log("question sets", questionSetRes.data);
         setQuestionSets(questionSetRes.data);
       }
       if (fieldsOfStudyRes !== undefined) {
         // Set fields of study state
+        console.log("fields of study", fieldsOfStudyRes);
         setFieldsOfStudy(fieldsOfStudyRes);
       }
       if (questionsRes.data !== undefined) {
+        console.log("questions", questionsRes.data);
         setQuestions(questionsRes.data);
       }
     } catch (error) {
@@ -125,8 +130,8 @@ const CourseManagement = () => {
   };
 
   const handleEditFOS = (field) => {
-    setEditingFOS(field.fieldid);
-    setEditedFOS({ field_name: field.field_name, field_description: field.field_description });
+    setEditingFOS(field.refId);
+    setEditedFOS({ name: field.name, description: field.description, refId: field.refId });
   };
 
   const handleSaveFOS = async (fieldid) => {
@@ -145,14 +150,16 @@ const CourseManagement = () => {
   };
 
   const handleEditCourse = (course) => {
-    setEditingCourse(course.courseid);
+    setEditingCourse(course.refId);
     setEditedCourse({
-      course_name: course.course_name,
-      course_description: course.course_description,
+      name: course.name,
+      description: course.description,
       agestart: course.agestart,
       ageend: course.ageend,
       free_course: course.free_course,
       field_name: course.field_name,
+      refId: course.refId,
+      refFOSId_String: course.refFOSId_String,
     });
   };
 
@@ -176,11 +183,11 @@ const CourseManagement = () => {
   };
 
   const handleEditSubTopic = (subTopic) => {
-    setEditingSubTopic(subTopic.subtopicid);
+    setEditingSubTopic(subTopic.refId);
     setEditedSubTopic({
-      subtopic_name: subTopic.subtopic_name,
-      subtopic_description: subTopic.subtopic_description,
-      courseid: subTopic.courseid,
+      name: subTopic.name,
+      description: subTopic.description,
+      refCourseId: subTopic.refCourseId,
     });
   };
 
@@ -204,12 +211,14 @@ const CourseManagement = () => {
   };
 
   const handleEditQuestionSet = (questionSet) => {
-    setEditingQuestionSet(questionSet.questionsetid);
+    setEditingQuestionSet(questionSet.refId);
     setEditedQuestionSet({
       name: questionSet.name,
       description: questionSet.description,
       subTopic: questionSet.subTopic,
       questions: questionSet.questions || [], // Ensure the value is an array
+      refSubTopicId: questionSet.refSubTopicId,
+      refQuestionIds: questionSet.refQuestionIds,
     });
   };
 
@@ -395,46 +404,49 @@ const CourseManagement = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {fieldsOfStudy.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((field) => (
-                  <TableRow key={field.fieldid}>
-                    <TableCell>
-                      <Checkbox
-                        checked={selectedItems.some((item) => item.id === field.fieldid && item.type === "fieldOfStudy")}
-                        onChange={() => handleSelectItem(field.fieldid, "fieldOfStudy")}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {editingFOS === field.fieldid ? (
-                        <TextField
-                          value={editedFOS.field_name}
-                          onChange={(e) => setEditedFOS({ ...editedFOS, field_name: e.target.value })}
+                {fieldsOfStudy.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((field, index) => {
+                  if (!field) {
+                    console.error(`Undefined field at index ${index}`);
+                    return null;
+                  }
+                  return (
+                    <TableRow key={field.refId}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedItems.some((item) => item.id === field.refId && item.type === "fieldOfStudy")}
+                          onChange={() => handleSelectItem(field.refId, "fieldOfStudy")}
                         />
-                      ) : (
-                        field.field_name
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {editingFOS === field.fieldid ? (
-                        <TextField
-                          value={editedFOS.field_description}
-                          onChange={(e) => setEditedFOS({ ...editedFOS, field_description: e.target.value })}
-                        />
-                      ) : (
-                        field.field_description
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {editingFOS === field.fieldid ? (
-                        <>
-                          <Button onClick={() => handleSaveFOS(field.fieldid)}>Save</Button>
-                          <Button onClick={handleCancelFOSEdit}>Cancel</Button>
-                        </>
-                      ) : (
-                        <Button onClick={() => handleEditFOS(field)}>Edit</Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      </TableCell>
+                      <TableCell>
+                        {editingFOS === field.refId ? (
+                          <TextField value={editedFOS.name} onChange={(e) => setEditedFOS({ ...editedFOS, name: e.target.value })} />
+                        ) : (
+                          field.name
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {editingFOS === field.refId ? (
+                          <TextField
+                            value={editedFOS.description}
+                            onChange={(e) => setEditedFOS({ ...editedFOS, description: e.target.value })}
+                          />
+                        ) : (
+                          field.description
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {editingFOS === field.refId ? (
+                          <>
+                            <Button onClick={() => handleSaveFOS(field.refId)}>Save</Button>
+                            <Button onClick={handleCancelFOSEdit}>Cancel</Button>
+                          </>
+                        ) : (
+                          <Button onClick={() => handleEditFOS(field)}>Edit</Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
             <TablePagination
@@ -479,35 +491,32 @@ const CourseManagement = () => {
               </TableHead>
               <TableBody>
                 {courses.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((course) => (
-                  <TableRow key={course.courseid}>
+                  <TableRow key={course.refId}>
                     <TableCell>
                       <Checkbox
-                        checked={selectedItems.some((item) => item.id === course.courseid && item.type === "course")}
-                        onChange={() => handleSelectItem(course.courseid, "course")}
+                        checked={selectedItems.some((item) => item.id === course.refId && item.type === "course")}
+                        onChange={() => handleSelectItem(course.refId, "course")}
                       />
                     </TableCell>
                     <TableCell>
-                      {editingCourse === course.courseid ? (
-                        <TextField
-                          value={editedCourse.course_name}
-                          onChange={(e) => setEditedCourse({ ...editedCourse, course_name: e.target.value })}
-                        />
+                      {editingCourse === course.refId ? (
+                        <TextField value={editedCourse.name} onChange={(e) => setEditedCourse({ ...editedCourse, name: e.target.value })} />
                       ) : (
-                        course.course_name
+                        course.name
                       )}
                     </TableCell>
                     <TableCell>
-                      {editingCourse === course.courseid ? (
+                      {editingCourse === course.refId ? (
                         <TextField
-                          value={editedCourse.course_description}
-                          onChange={(e) => setEditedCourse({ ...editedCourse, course_description: e.target.value })}
+                          value={editedCourse.description}
+                          onChange={(e) => setEditedCourse({ ...editedCourse, description: e.target.value })}
                         />
                       ) : (
-                        course.course_description
+                        course.description
                       )}
                     </TableCell>
                     <TableCell>
-                      {editingCourse === course.courseid ? (
+                      {editingCourse === course.refId ? (
                         <TextField
                           value={editedCourse.agestart}
                           onChange={(e) => setEditedCourse({ ...editedCourse, agestart: e.target.value })}
@@ -517,7 +526,7 @@ const CourseManagement = () => {
                       )}
                     </TableCell>
                     <TableCell>
-                      {editingCourse === course.courseid ? (
+                      {editingCourse === course.refId ? (
                         <TextField
                           value={editedCourse.ageend}
                           onChange={(e) => setEditedCourse({ ...editedCourse, ageend: e.target.value })}
@@ -527,7 +536,7 @@ const CourseManagement = () => {
                       )}
                     </TableCell>
                     <TableCell>
-                      {editingCourse === course.courseid ? (
+                      {editingCourse === course.refId ? (
                         <Checkbox
                           checked={editedCourse.free_course}
                           onChange={(e) => setEditedCourse({ ...editedCourse, free_course: e.target.checked })}
@@ -539,26 +548,26 @@ const CourseManagement = () => {
                       )}
                     </TableCell>
                     <TableCell>
-                      {editingCourse === course.courseid ? (
+                      {editingCourse === course.refId ? (
                         <Select
-                          value={editedCourse.fieldid}
+                          value={editedCourse.refFOSId_String}
                           onChange={(e) => setEditedCourse({ ...editedCourse, fieldid: e.target.value })}
                           fullWidth
                         >
                           {fieldsOfStudy.map((field) => (
-                            <MenuItem key={field.fieldid} value={field.fieldid}>
-                              {field.field_name}
+                            <MenuItem key={field.refId} value={field.refId}>
+                              {field.name}
                             </MenuItem>
                           ))}
                         </Select>
                       ) : (
-                        fieldsOfStudy.find((field) => field.fieldid === course.fieldid)?.field_name || ""
+                        fieldsOfStudy.find((field) => field.refId === course.refFOSId_String)?.name || ""
                       )}
                     </TableCell>
                     <TableCell>
-                      {editingCourse === course.courseid ? (
+                      {editingCourse === course.refId ? (
                         <>
-                          <Button onClick={() => handleSaveCourse(course.courseid)}>Save</Button>
+                          <Button onClick={() => handleSaveCourse(course.refId)}>Save</Button>
                           <Button onClick={handleCancelCourseEdit}>Cancel</Button>
                         </>
                       ) : (
@@ -608,54 +617,54 @@ const CourseManagement = () => {
               </TableHead>
               <TableBody>
                 {subTopics.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((subTopic) => (
-                  <TableRow key={subTopic.id}>
+                  <TableRow key={subTopic.refId}>
                     <TableCell>
                       <Checkbox
-                        checked={selectedItems.some((item) => item.id === subTopic.subtopicid && item.type === "subTopic")}
-                        onChange={() => handleSelectItem(subTopic.subtopicid, "subTopic")}
+                        checked={selectedItems.some((item) => item.id === subTopic.refId && item.type === "subTopic")}
+                        onChange={() => handleSelectItem(subTopic.refId, "subTopic")}
                       />
                     </TableCell>
                     <TableCell>
-                      {editingSubTopic === subTopic.subtopicid ? (
+                      {editingSubTopic === subTopic.refId ? (
                         <TextField
-                          value={editedSubTopic.subtopic_name}
-                          onChange={(e) => setEditedSubTopic({ ...editedSubTopic, subtopic_name: e.target.value })}
+                          value={editedSubTopic.name}
+                          onChange={(e) => setEditedSubTopic({ ...editedSubTopic, name: e.target.value })}
                         />
                       ) : (
-                        subTopic.subtopic_name
+                        subTopic.name
                       )}
                     </TableCell>
                     <TableCell>
-                      {editingSubTopic === subTopic.subtopicid ? (
+                      {editingSubTopic === subTopic.refId ? (
                         <TextField
-                          value={editedSubTopic.subtopic_description}
-                          onChange={(e) => setEditedSubTopic({ ...editedSubTopic, subtopic_description: e.target.value })}
+                          value={editedSubTopic.description}
+                          onChange={(e) => setEditedSubTopic({ ...editedSubTopic, description: e.target.value })}
                         />
                       ) : (
-                        subTopic.subtopic_description
+                        subTopic.description
                       )}
                     </TableCell>
                     <TableCell>
-                      {editingSubTopic === subTopic.subtopicid ? (
+                      {editingSubTopic === subTopic.refId ? (
                         <Select
-                          value={editedSubTopic.courseid}
-                          onChange={(e) => setEditedSubTopic({ ...editedSubTopic, courseid: e.target.value })}
+                          value={editedSubTopic.refCourseId}
+                          onChange={(e) => setEditedSubTopic({ ...editedSubTopic, refCourseId: e.target.value })}
                           fullWidth
                         >
                           {courses.map((course) => (
-                            <MenuItem key={course.courseid} value={course.courseid}>
-                              {course.course_name}
+                            <MenuItem key={course.refId} value={course.refId}>
+                              {course.name}
                             </MenuItem>
                           ))}
                         </Select>
                       ) : (
-                        courses.find((course) => course.courseid === subTopic.courseid)?.course_name || ""
+                        courses.find((course) => course.refId === subTopic.refCourseId)?.name || ""
                       )}
                     </TableCell>
                     <TableCell>
-                      {editingSubTopic === subTopic.subtopicid ? (
+                      {editingSubTopic === subTopic.refId ? (
                         <>
-                          <Button onClick={() => handleSaveSubTopic(subTopic.subtopicid)}>Save</Button>
+                          <Button onClick={() => handleSaveSubTopic(subTopic.refId)}>Save</Button>
                           <Button onClick={handleCancelSubTopicEdit}>Cancel</Button>
                         </>
                       ) : (
@@ -706,15 +715,15 @@ const CourseManagement = () => {
               </TableHead>
               <TableBody>
                 {questionSets.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((questionSet) => (
-                  <TableRow key={questionSet.id}>
+                  <TableRow key={questionSet.refId}>
                     <TableCell>
                       <Checkbox
-                        checked={selectedItems.some((item) => item.id === questionSet.questionsetid && item.type === "questionSet")}
-                        onChange={() => handleSelectItem(questionSet.questionsetid, "questionSet")}
+                        checked={selectedItems.some((item) => item.id === questionSet.refId && item.type === "questionSet")}
+                        onChange={() => handleSelectItem(questionSet.refId, "questionSet")}
                       />
                     </TableCell>
                     <TableCell>
-                      {editingQuestionSet === questionSet.questionsetid ? (
+                      {editingQuestionSet === questionSet.refId ? (
                         <TextField
                           value={editedQuestionSet.name}
                           onChange={(e) => setEditedQuestionSet({ ...editedQuestionSet, name: e.target.value })}
@@ -724,7 +733,7 @@ const CourseManagement = () => {
                       )}
                     </TableCell>
                     <TableCell>
-                      {editingQuestionSet === questionSet.questionsetid ? (
+                      {editingQuestionSet === questionSet.refId ? (
                         <TextField
                           value={editedQuestionSet.description}
                           onChange={(e) => setEditedQuestionSet({ ...editedQuestionSet, description: e.target.value })}
@@ -734,47 +743,53 @@ const CourseManagement = () => {
                       )}
                     </TableCell>
                     <TableCell>
-                      {editingQuestionSet === questionSet.questionsetid ? (
+                      {editingQuestionSet === questionSet.refId ? (
                         <Select
                           value={editedQuestionSet.subTopic}
                           onChange={(e) => setEditedQuestionSet({ ...editedQuestionSet, subTopics: e.target.value })}
                           fullWidth
                         >
                           {subTopics.map((subTopic) => (
-                            <MenuItem key={subTopic.subtopicid} value={subTopic.subtopicid}>
-                              {questionSet.subTopic}
+                            <MenuItem key={subTopic.refId} value={subTopic.refId}>
+                              {subTopic.name}
                             </MenuItem>
                           ))}
                         </Select>
                       ) : (
-                        subTopics.find((subTopic) => subTopic.subtopicid === questionSet.subTopic)?.subtopic_name || ""
+                        subTopics.find((subTopic) => subTopic.refId === questionSet.subTopic)?.name || ""
                       )}
                     </TableCell>
 
                     <TableCell>
-                      {editingQuestionSet === questionSet.questionsetid ? (
+                      {editingQuestionSet === questionSet.refId ? (
                         <Select
                           value={editedQuestionSet.questions || []} // Ensure the value is an array
                           onChange={(e) => setEditedQuestionSet({ ...editedQuestionSet, questions: e.target.value })}
                           multiple
                           fullWidth
                         >
-                          {questions.map((question) => (
-                            <MenuItem key={question.questionid} value={question.questionid}>
-                              <Checkbox checked={editedQuestionSet.questions.indexOf(question.questionid) > -1} />
-                              <ListItemText primary={question.question_text} />
-                            </MenuItem>
-                          ))}
+                          {Array.isArray(questions) && questions.length > 0 ? (
+                            questions.map((question) => (
+                              <MenuItem key={question.refId} value={question.refId}>
+                                <Checkbox checked={editedQuestionSet.questions.indexOf(question.refId) > -1} />
+                                <ListItemText primary={question.question_text} />
+                              </MenuItem>
+                            ))
+                          ) : (
+                            <MenuItem disabled>No questions available</MenuItem>
+                          )}
                         </Select>
-                      ) : (
+                      ) : Array.isArray(questionSet.questions) && questionSet.questions.length > 0 ? (
                         questionSet.questions.map((q) => q).join(", ")
+                      ) : (
+                        "No questions available"
                       )}
                     </TableCell>
 
                     <TableCell>
-                      {editingQuestionSet === questionSet.questionsetid ? (
+                      {editingQuestionSet === questionSet.refId ? (
                         <>
-                          <Button onClick={() => handleSaveQuestionSet(questionSet.questionsetid)}>Save</Button>
+                          <Button onClick={() => handleSaveQuestionSet(questionSet.refId)}>Save</Button>
                           <Button onClick={handleCancelQuestionSetEdit}>Cancel</Button>
                         </>
                       ) : (

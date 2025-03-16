@@ -11,32 +11,32 @@ class User(db.Document):
     password = db.StringField(required=True)
     created_at = db.DateTimeField(default=datetime.utcnow)
     user_type = db.StringField(required=True) # Can be 'student', 'teacher' or 'founder'
-    field_of_study = db.ReferenceField('FieldOfStudy') # Can be linked to a field of study
+    refFOSId = db.ReferenceField('FieldOfStudy') # Can be linked to a field of study
 
 #create a field of study model, courses will be linked to this
 class FieldOfStudy(db.Document):
-    fieldid = db.StringField(required=True, unique=True)
-    field_name = db.StringField(required=True)
-    field_description = db.StringField()
+    refId = db.StringField(required=True, unique=True)
+    name = db.StringField(required=True)
+    description = db.StringField()
 
 # These define the course structure
 class Course(db.Document):
-    courseid = db.StringField(required=True, unique=True)
-    course_name = db.StringField(required=True)
-    course_description = db.StringField()
+    refId = db.StringField(required=True, unique=True)
+    name = db.StringField(required=True)
+    description = db.StringField()
     agestart = db.IntField(required=True)
     ageend = db.IntField(required=True)
     free_course = db.BooleanField(required=True)
-    field_of_study = db.ReferenceField(FieldOfStudy, required=True)
+    refFOSId = db.ReferenceField(FieldOfStudy, required=True)
 
 class Subtopic(db.Document):
-    subtopicid = db.StringField(required=True, unique=True)
-    subtopic_name = db.StringField(required=True)
-    subtopic_description = db.StringField()
-    course = db.ReferenceField(Course, required=True)    
+    refId = db.StringField(required=True, unique=True)
+    name = db.StringField(required=True)
+    description = db.StringField()
+    refCourseId = db.ReferenceField(Course, required=True)    
 
 class Questions(db.Document):
-    questionid = db.StringField(required=True, unique=True)
+    refId = db.StringField(required=True, unique=True)
     question_text = db.StringField(required=True)
     options = db.StringField(required=True)
     correct_answer = db.StringField(required=True)
@@ -44,11 +44,11 @@ class Questions(db.Document):
     explanation = db.StringField()
 
 class QuestionSet(db.Document):
-    questionsetid = db.StringField(required=True, unique=True)
+    refId = db.StringField(required=True, unique=True)
     name = db.StringField(required=True)
     description = db.StringField()
-    subtopic = db.ReferenceField(Subtopic, required=True)
-    questions = db.ListField(db.ReferenceField(Questions))
+    refSubTopicId = db.ReferenceField(Subtopic, required=True)
+    refQuestionIds = db.ListField(db.ReferenceField(Questions))
 
 # These define how the user interacts with the course
 class QuestionProgress(db.Document):
@@ -59,23 +59,23 @@ class QuestionProgress(db.Document):
     time_taken = db.IntField()
 
 class CourseProgress(db.Document):
-    user = db.ReferenceField(User, required=True)
-    course = db.ReferenceField(Course, required=True)
+    refUserId = db.ReferenceField(User, required=True)
+    refCourseId = db.ReferenceField(Course, required=True)
     started = db.BooleanField(required=True) # can this be computed from QuestionProgress?
     started_at = db.DateTimeField(default=datetime.utcnow) # can this be computed from QuestionProgress?
     completed_at = db.DateTimeField() # can this be computed from QuestionProgress?
 
 # These captures user ids which are teachers
 class Teacher(db.Document):
-    user = db.ReferenceField(User, required=True)
+    refUserId = db.ReferenceField(User, required=True)
 
 
 # These captures user ids which are founders
 class Founder(db.Document):
-    user = db.ReferenceField(User, required=True)
+    refUserId = db.ReferenceField(User, required=True)
 
 # These capture user ids which have been given the free course
 class FreeCourseAllotment(db.Document):
-    user = db.ReferenceField(User, required=True)
-    course = db.ReferenceField(Course, required=True)
+    refUserId = db.ReferenceField(User, required=True)
+    refCourseId = db.ReferenceField(Course, required=True)
     date_given = db.DateTimeField(default=datetime.utcnow)

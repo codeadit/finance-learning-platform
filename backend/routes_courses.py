@@ -17,7 +17,7 @@ def get_courses():
     courses_with_fieldid = []
     for course in courses:
         course_dict = course.to_mongo().to_dict()
-        course_dict['fieldid'] = str(course.field_of_study.fieldid) if course.field_of_study else None
+        course_dict['refFOSId_String'] = str(course.refFOSId.refId) if course.refFOSId else None
         courses_with_fieldid.append(course_dict)
     return json_util.dumps(courses_with_fieldid), 200
 
@@ -26,54 +26,54 @@ def get_courses():
 @jwt_required()
 def create_course():
     data = request.get_json()
-    course_name = data.get('course_name')
-    course_description = data.get('course_description')
+    nameData = data.get('name')
+    descriptionData = data.get('description')
     agestart = data.get('agestart')
     ageend = data.get('ageend')
     free_course = data.get('free_course')
-    fieldid = data.get('fieldid')
+    refFOSId_String = data.get('refFOSId_String')
 
-    if not course_name or agestart is None or ageend is None or free_course is None:
+    if not nameData or agestart is None or ageend is None or free_course is None:
         return jsonify({'error': 'Missing required fields'}), 400
 
-    courseid = course_name.lower().replace(" ", "_");   
-    if Course.objects(courseid=courseid).first():
+    courseIdData = nameData.lower().replace(" ", "_");   
+    if Course.objects(refId=courseIdData).first():
         return jsonify({'error': 'Course already exists'}), 400
     
-    field_of_study = FieldOfStudy.objects(fieldid=fieldid).first()
-    if not field_of_study:
+    fos = FieldOfStudy.objects(refId=refFOSId_String).first()
+    if not fos:
         return jsonify({'error': 'Field of Study not found'}), 404
 
-    course = Course(courseid=courseid, course_name=course_name, course_description=course_description, agestart=agestart, ageend=ageend, free_course=free_course, field_of_study=field_of_study)
+    course = Course(refId=courseIdData, name=nameData, description=descriptionData, agestart=agestart, ageend=ageend, free_course=free_course, refFOSId=fos)
     course.save()
 
     return jsonify({'message': 'Course created successfully'}), 201
 
 # Update Course
-@courses_bp.route('/courses/<course_id>', methods=['PUT'])
+@courses_bp.route('/courses/<courseIdData>', methods=['PUT'])
 @jwt_required()
-def update_course(course_id):
+def update_course(courseIdData):
     data = request.get_json()
-    course_name = data.get('course_name')
-    course_description = data.get('course_description')
+    nameData = data.get('name')
+    descriptionData = data.get('description')
     age_start = data.get('agestart')
     age_end = data.get('ageend')
     free_course = data.get('free_course')
-    fieldid = data.get('fieldid')
+    refFOSId_String = data.get('refFOSId_String')
 
 
-    if not course_name or not course_description:
+    if not nameData or not descriptionData:
         return jsonify({'error': 'Missing required fields'}), 400
 
-    course = Course.objects(courseid=course_id).first()
+    course = Course.objects(refId=courseIdData).first()
     if not course:
         return jsonify({'error': 'Course not found'}), 404
     
-    field_of_study = FieldOfStudy.objects(fieldid=fieldid).first()
-    if not field_of_study:
+    fosRef = FieldOfStudy.objects(refId=refFOSId_String).first()
+    if not fosRef:
         return jsonify({'error': 'Field of Study not found'}), 404
 
-    course.update(course_name=course_name, course_description=course_description, agestart=age_start, ageend=age_end, free_course=free_course, field_of_study=field_of_study)
+    course.update(name=nameData, description=descriptionData, agestart=age_start, ageend=age_end, free_course=free_course, refFOSId=fosRef)
     return jsonify({'message': 'Course updated successfully'}), 200
 
 #delete Course
@@ -91,7 +91,7 @@ def delete_courses():
     ids_not_found = []
 
     for i in idList:
-        course = Course.objects(courseid=i).first()
+        course = Course.objects(refId=i).first()
         if course:
             ids_deleted.append(i)
             course.delete()
@@ -105,22 +105,22 @@ def delete_courses():
 @jwt_required()
 def create_subtopic():
     data = request.get_json()
-    subtopic_name = data.get('name')
-    subtopic_description = data.get('description')
-    courseid = data.get('courseid')
+    name = data.get('name')
+    description = data.get('description')
+    refCourseId = data.get('refCourseId')
 
-    if not subtopic_name or subtopic_description is None or courseid is None:
+    if not name or description is None or refCourseId is None:
         return jsonify({'error': 'Missing required fields'}), 400
 
-    subtopicid = subtopic_name.lower().replace(" ", "_");   
-    if Subtopic.objects(subtopicid=subtopicid).first():
+    subTopicIdData = name.lower().replace(" ", "_");   
+    if Subtopic.objects(refId=subTopicIdData).first():
         return jsonify({'error': 'Subtopic already exists'}), 400
     
-    course = Course.objects(courseid=courseid).first()
-    if not course:
+    refCourse = Course.objects(refId=refCourseId).first()
+    if not refCourse:
         return jsonify({'error': 'Course not found'}), 404
 
-    subtopic = Subtopic(subtopicid=subtopicid, subtopic_name=subtopic_name, subtopic_description=subtopic_description, course=course)
+    subtopic = Subtopic(refId=subTopicIdData, name=name, description=description, refCourseId=refCourse)
     subtopic.save()
 
     return jsonify({'message': 'Subtopic created successfully'}), 201
@@ -130,22 +130,22 @@ def create_subtopic():
 @jwt_required()
 def update_subtopic(subtopic_id):
     data = request.get_json()
-    subtopic_name = data.get('subtopic_name')
-    subtopic_description = data.get('subtopic_description')
-    courseid = data.get('courseid')
+    nameData = data.get('name')
+    descriptionData = data.get('description')
+    refCourseIdData = data.get('refCourseId')
 
-    if not subtopic_name or not subtopic_description or not courseid:
+    if not nameData or not descriptionData or not refCourseIdData:
         return jsonify({'error': 'Missing required fields'}), 400
     
-    subtopic = Subtopic.objects(subtopicid=subtopic_id).first()
-    if not subtopic:
+    subTopicRef = Subtopic.objects(refId=subtopic_id).first()
+    if not subTopicRef:
         return jsonify({'error': 'Subtopic not found'}), 404
 
-    course = Course.objects(courseid=courseid).first()
-    if not course:
+    courseRef = Course.objects(refId=refCourseIdData).first()
+    if not courseRef:
         return jsonify({'error': 'Course not found'}), 404
 
-    subtopic.update(subtopic_name=subtopic_name, subtopic_description=subtopic_description, course=course)
+    subTopicRef.update(name=nameData, description=descriptionData, refCourseId=courseRef)
     return jsonify({'message': 'Subtopic updated successfully'}), 200
 
 #get list of all subtopics
@@ -156,7 +156,7 @@ def get_subtopics():
     subTopics_with_courseid = []
     for subTopic in subTopics:
         subtopic_dict = subTopic.to_mongo().to_dict()
-        subtopic_dict['courseid'] = str(subTopic.course.courseid) if subTopic.course else None
+        subtopic_dict['refCourseId'] = str(subTopic.refCourseId.refId) if subTopic.refCourseId else None
         subTopics_with_courseid.append(subtopic_dict)
     return json_util.dumps(subTopics_with_courseid), 200
 
@@ -175,7 +175,7 @@ def delete_subtopic():
     ids_not_found = []
 
     for i in idList:
-        subtopic = Subtopic.objects(subtopicid=i).first()
+        subtopic = Subtopic.objects(refId=i).first()
         if subtopic:
             ids_deleted.append(i)
             subtopic.delete()
@@ -192,22 +192,22 @@ def delete_subtopic():
 @jwt_required()
 def create_questionSet():
     data = request.get_json()
-    qSet_name = data.get('name')
-    qSet_Description = data.get('description')
-    subTopicId = data.get('subtopicid')
+    nameData = data.get('name')
+    descriptionData = data.get('description')
+    refSubTopicIdData = data.get('refSubTopicId')
 
-    if not qSet_name or qSet_Description is None or subTopicId is None:
+    if not nameData or descriptionData is None or refSubTopicIdData is None:
         return jsonify({'error': 'Missing required fields'}), 400
 
-    qSetId = qSet_name.lower().replace(" ", "_");   
-    if QuestionSet.objects(questionsetid=qSetId).first():
+    qSetId = nameData.lower().replace(" ", "_");   
+    if QuestionSet.objects(refId=qSetId).first():
         return jsonify({'error': 'Question Set already exists'}), 400
     
-    subTopicRef = Subtopic.objects(subtopicid=subTopicId).first()
+    subTopicRef = Subtopic.objects(refId=refSubTopicIdData).first()
     if not subTopicRef:
         return jsonify({'error': 'Subtopic not found'}), 404
 
-    qSet = QuestionSet(questionsetid=qSetId, name=qSet_name, description=qSet_Description, subtopic=subTopicRef)
+    qSet = QuestionSet(refId=qSetId, name=nameData, description=descriptionData, refSubTopicId=subTopicRef)
     qSet.save()
 
     return jsonify({'message': 'Question Set created successfully'}), 201
@@ -220,10 +220,10 @@ def get_questionsets():
     qSets_with_subTopicid = []
     for qSet in qSets:
         qSet_dict = qSet.to_mongo().to_dict()
-        qSet_dict['subTopic'] = str(qSet.subtopic.subtopicid) if qSet.subtopic else None
+        qSet_dict['subTopic'] = str(qSet.refSubTopicId.refId) if qSet.refSubTopicId else None
 
-        for qs in qSet.questions:
-            qSet_dict['questions'] = [str(q.questionid) for q in qSet.questions if q]
+        for qs in qSet.refQuestionIds:
+            qSet_dict['questions'] = [str(q.refId) for q in qSet.refQuestionIds if q]
 
         qSets_with_subTopicid.append(qSet_dict)
 
@@ -234,31 +234,31 @@ def get_questionsets():
 @jwt_required()
 def update_qSet(questionset_id):
     data = request.get_json()
-    name = data.get('name')
-    description = data.get('description')
-    subtopicid = data.get('subTopic')
-    questions = data.get('questions')
+    nameData = data.get('name')
+    descriptionData = data.get('description')
+    refSubTopicIdData = data.get('subTopic')
+    refQuestionIdsData = data.get('questions')
 
     # Ensure questions is a list of ObjectId references
-    question_references = []
-    if questions:
-        for question_id in questions:
-            question = Questions.objects(questionid=question_id).first()
+    qRefs = []
+    if refQuestionIdsData:
+        for question_id in refQuestionIdsData:
+            question = Questions.objects(refId=question_id).first()
             if question:
-                question_references.append(question)
+                qRefs.append(question)
 
-    if not name or not description or not subtopicid:
+    if not nameData or not descriptionData or not refSubTopicIdData:
         return jsonify({'error': 'Missing required fields'}), 400
     
-    qSet = QuestionSet.objects(questionsetid=questionset_id).first()
+    qSet = QuestionSet.objects(refId=questionset_id).first()
     if not qSet:
         return jsonify({'error': 'Question Set not found'}), 404
 
-    subTopicRef = Subtopic.objects(subtopicid=subtopicid).first()
+    subTopicRef = Subtopic.objects(refId=refSubTopicIdData).first()
     if not subTopicRef:
         return jsonify({'error': 'Course not found'}), 404
 
-    qSet.update(name=name, description=description, subtopic=subTopicRef, questions=question_references)
+    qSet.update(name=nameData, description=descriptionData, refSubTopicId=subTopicRef, refQuestionIds=qRefs)
     return jsonify({'message': 'Question Set updated successfully'}), 200
 
 
@@ -277,7 +277,7 @@ def delete_questionset():
     ids_not_found = []
 
     for i in idList:
-        subtopic = QuestionSet.objects(questionsetid=i).first()
+        subtopic = QuestionSet.objects(refId=i).first()
         if subtopic:
             ids_deleted.append(i)
             subtopic.delete()
@@ -302,10 +302,10 @@ def create_question():
         return jsonify({'error': 'Missing required fields'}), 400
     
     questionid = question_text.lower().replace(" ", "_");
-    if Questions.objects(questionid=questionid).first():
+    if Questions.objects(refId=questionid).first():
         return jsonify({'error': 'Question already exists'}), 400
     
-    question = Questions(questionid=questionid, question_text=question_text, options=options, correct_answer=correct_answer, difficulty=difficulty, explanation=explanation)
+    question = Questions(refId=questionid, question_text=question_text, options=options, correct_answer=correct_answer, difficulty=difficulty, explanation=explanation)
     question.save()
 
     return jsonify({'message': 'Question created successfully'}), 201
@@ -324,7 +324,7 @@ def update_question(question_id):
     if not question_text or not options or not correct_answer or not difficulty:
         return jsonify({'error': 'Missing required fields'}), 400
 
-    qRef = Questions.objects(questionid=question_id).first()
+    qRef = Questions.objects(refId=question_id).first()
     if not qRef:
         return jsonify({'error': 'Question not found'}), 404
 
@@ -353,7 +353,7 @@ def delete_questions():
     ids_not_found = []
 
     for i in idList:
-        fos = Questions.objects(questionid=i).first()
+        fos = Questions.objects(refId=i).first()
         if fos:
             ids_deleted.append(i)
             fos.delete()
@@ -369,18 +369,18 @@ def delete_questions():
 @jwt_required()
 def create_fieldofstudy():
     data = request.get_json()
-    fieldofstudy_name = data.get('field_name')
-    fieldofstudy_description = data.get('field_description')
+    fieldofstudy_name = data.get('name')
+    fieldofstudy_description = data.get('description')
     
     if not fieldofstudy_name or not fieldofstudy_description:
         return jsonify({'error': 'Missing required fields'}), 400
 
-    if FieldOfStudy.objects(field_name=fieldofstudy_name).first():
+    if FieldOfStudy.objects(name=fieldofstudy_name).first():
         return jsonify({'error': 'Field of Study already exists'}), 400
     
     # create a unique field id
     fieldofstudy_id = fieldofstudy_name.lower().replace(" ", "_");
-    fos = FieldOfStudy(fieldid=fieldofstudy_id, field_name=fieldofstudy_name, field_description=fieldofstudy_description)
+    fos = FieldOfStudy(refId=fieldofstudy_id, name=fieldofstudy_name, description=fieldofstudy_description)
     fos.save()
 
     return jsonify({'message': 'Field Of Study created successfully'}), 201
@@ -397,17 +397,17 @@ def get_fieldofstudy():
 @jwt_required()
 def update_fieldofstudy(fieldid):
     data = request.get_json()
-    field_name = data.get('field_name')
-    field_description = data.get('field_description')
+    fname = data.get('name')
+    fdescription = data.get('description')
 
-    if not field_name or not field_description:
+    if not fname or not fdescription:
         return jsonify({'error': 'Missing required fields'}), 400
 
-    fos = FieldOfStudy.objects(fieldid=fieldid).first()
+    fos = FieldOfStudy.objects(refId=fieldid).first()
     if not fos:
         return jsonify({'error': 'Field of Study not found'}), 404
 
-    fos.update(field_name=field_name, field_description=field_description)
+    fos.update(name=fname, description=fdescription)
     return jsonify({'message': 'Field of Study updated successfully'}), 200
 
 #delete field of study
@@ -425,7 +425,7 @@ def delete_fieldofstudy():
     ids_not_found = []
 
     for i in idList:
-        fos = FieldOfStudy.objects(fieldid=i).first()
+        fos = FieldOfStudy.objects(refId=i).first()
         if fos:
             ids_deleted.append(i)
             fos.delete()

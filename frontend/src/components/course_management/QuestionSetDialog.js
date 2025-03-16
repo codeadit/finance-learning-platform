@@ -19,7 +19,7 @@ const QuestionSetDialog = ({ open, onClose, onCreate, subTopics }) => {
   const [questionSet, setQuestionSet] = useState({
     name: "",
     description: "",
-    subtopicid: "",
+    refSubTopicId: "",
   });
 
   const handleChange = (e) => {
@@ -70,10 +70,10 @@ const QuestionSetDialog = ({ open, onClose, onCreate, subTopics }) => {
         />
         <FormControl fullWidth margin="dense">
           <InputLabel>Sub Topic</InputLabel>
-          <Select value={questionSet.subtopicid} onChange={handleChange} name="subtopicid">
+          <Select value={questionSet.refSubTopicId} onChange={handleChange} name="refSubTopicId">
             {subTopics.map((subTopic) => (
-              <MenuItem key={subTopic.subtopicid} value={subTopic.subtopicid}>
-                {subTopic.subtopic_name}
+              <MenuItem key={subTopic.refId} value={subTopic.refId}>
+                {subTopic.name}
               </MenuItem>
             ))}
           </Select>

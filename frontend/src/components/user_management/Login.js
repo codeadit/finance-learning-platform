@@ -40,7 +40,6 @@ const Login = () => {
         });
       }
     } catch (err) {
-      console.error(err.response.data);
       Swal.fire({
         icon: "error",
         title: "Oops...",

@@ -147,8 +147,8 @@ const UsersListView = () => {
                 <TableCell>
                   <Select value={user.fieldOfStudy} onChange={(e) => handleFieldOfStudyChange(user.username, e.target.value)}>
                     {fieldsOfStudyData.map((field) => (
-                      <MenuItem key={field.fieldid} value={field.fieldid}>
-                        {field.field_name}
+                      <MenuItem key={field.refId} value={field.refId}>
+                        {field.name}
                       </MenuItem>
                     ))}
                   </Select>

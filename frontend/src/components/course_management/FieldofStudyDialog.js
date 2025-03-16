@@ -4,8 +4,8 @@ import fieldsOfStudyService from "../../services/fieldsOfStudyService";
 
 const FieldofStudyDialog = ({ open, onClose, onCreate }) => {
   const [field, setField] = useState({
-    field_name: "",
-    field_description: "",
+    name: "",
+    description: "",
   });
   const [error, setError] = useState("");
 
@@ -41,8 +41,8 @@ const FieldofStudyDialog = ({ open, onClose, onCreate }) => {
           label="Field Name"
           type="text"
           fullWidth
-          name="field_name"
-          value={field.field_name}
+          name="name"
+          value={field.name}
           onChange={handleChange}
         />
         <TextField
@@ -50,8 +50,8 @@ const FieldofStudyDialog = ({ open, onClose, onCreate }) => {
           label="Field Description"
           type="text"
           fullWidth
-          name="field_description"
-          value={field.field_description}
+          name="description"
+          value={field.description}
           onChange={handleChange}
         />
         {error && (

@@ -11,8 +11,8 @@ const getFieldsOfStudy = async (token) => {
   return response.data;
 };
 
-const updateFieldOfStudy = async (fieldid, editedFOS, token) => {
-  const response = await axios.put(`${API_BASE_URL}/courses/fields_of_study/${fieldid}`, editedFOS, {
+const updateFieldOfStudy = async (refId, editedFOS, token) => {
+  const response = await axios.put(`${API_BASE_URL}/courses/fields_of_study/${refId}`, editedFOS, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

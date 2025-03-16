@@ -27,7 +27,7 @@ def register():
         return jsonify({'error': 'User already exists'}), 400
 
     hashed_password = generate_password_hash(password)
-    user = User(username=username, email=email, password=hashed_password, user_type='student')
+    user = User(username=username, email=email, password=hashed_password, user_type='founder')
     user.save()
 
     return jsonify({'message': 'User registered successfully'}), 201
@@ -68,7 +68,8 @@ def get_users():
             'createdAt': user.created_at,
             'lastLogin': user.created_at,
             'userType': user.user_type,
-            'field_of_study': user.field_of_study.fieldid if user.field_of_study else None
+            'refFOSId': user.refFOSId.refId if user.refFOSId else None,
+            'refFOSId_String': str(user.refFOSId.refId) if user.refFOSId else None
         })
     return jsonify(users_list), 200
 
@@ -147,12 +148,12 @@ def change_user_FOS():
     user = User.objects(email=email).first()
     fieldid = data.get('fos')
 
-    fos = FieldOfStudy.objects(fieldid=fieldid).first()
+    fos = FieldOfStudy.objects(refId=fieldid).first()
     if not fos:
         return jsonify({'error': 'Field of Study not found'}), 404
     
     if user:
-        user.update(field_of_study=fos)
+        user.update(refFOSId=fos)
         return jsonify({'message': 'User FOS updated successfully'}), 200
     else:
         return jsonify({'error': 'User not found'}), 404

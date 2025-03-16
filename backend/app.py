@@ -9,8 +9,8 @@ from flask_mongoengine import MongoEngine
 from jwt_setup import setup_jwt
 from models import User, db
 from pymongo import MongoClient
-from routes_user import user_bp
 from routes_courses import courses_bp
+from routes_user import user_bp
 from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
@@ -26,6 +26,12 @@ app.config['MONGODB_SETTINGS'] = {
 # Initialize MongoEngine
 db = MongoEngine()
 db.init_app(app)
+clearing_database = False
+if(clearing_database == True):
+    # Clear the database
+    client = MongoClient('localhost', 27017)
+    client.drop_database('user_db')
+
 jwt = setup_jwt(app)
 
 # Register blueprints

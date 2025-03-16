@@ -19,25 +19,25 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const CourseDialog = ({ open, onClose, onCreate, fieldsOfStudy }) => {
   const [course, setCourse] = useState({
-    courseid: "",
-    course_name: "",
-    course_description: "",
+    refId: "",
+    name: "",
+    description: "",
     agestart: "",
     ageend: "",
     free_course: false,
-    fieldid: "",
+    refFOSId_String: "",
   });
 
   useEffect(() => {
     if (open) {
       setCourse({
-        courseid: "",
-        course_name: "",
-        course_description: "",
+        refId: "",
+        name: "",
+        description: "",
         agestart: "",
         ageend: "",
         free_course: false,
-        fieldid: "",
+        refFOSId_String: "",
       });
     }
   }, [open]);
@@ -75,7 +75,7 @@ const CourseDialog = ({ open, onClose, onCreate, fieldsOfStudy }) => {
           type="text"
           fullWidth
           name="course_name"
-          value={course.course_name}
+          value={course.name}
           onChange={handleChange}
         />
         <TextField
@@ -84,17 +84,17 @@ const CourseDialog = ({ open, onClose, onCreate, fieldsOfStudy }) => {
           type="text"
           fullWidth
           name="course_description"
-          value={course.course_description}
+          value={course.description}
           onChange={handleChange}
         />
         <TextField margin="dense" label="Min Age" type="number" fullWidth name="agestart" value={course.agestart} onChange={handleChange} />
         <TextField margin="dense" label="Max Age" type="number" fullWidth name="ageend" value={course.ageend} onChange={handleChange} />
         <FormControl fullWidth margin="dense">
           <InputLabel>Field of Study</InputLabel>
-          <Select name="fieldid" value={course.fieldid} onChange={handleChange}>
+          <Select name="refFOSId_String" value={course.refFOSId_String} onChange={handleChange}>
             {fieldsOfStudy.map((field) => (
-              <MenuItem key={field.fieldid} value={field.fieldid}>
-                {field.field_name}
+              <MenuItem key={field.refId} value={field.refId}>
+                {field.name}
               </MenuItem>
             ))}
           </Select>

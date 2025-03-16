@@ -19,7 +19,7 @@ const SubTopicDialog = ({ open, onClose, onCreate, courses }) => {
   const [subTopic, setSubTopic] = useState({
     name: "",
     description: "",
-    courseid: "",
+    refCourseId: "",
   });
 
   const handleChange = (e) => {
@@ -70,10 +70,10 @@ const SubTopicDialog = ({ open, onClose, onCreate, courses }) => {
         />
         <FormControl fullWidth margin="dense">
           <InputLabel>Course</InputLabel>
-          <Select name="courseid" value={subTopic.courseid} onChange={handleChange}>
+          <Select name="refCourseId" value={subTopic.refCourseId} onChange={handleChange}>
             {courses.map((course) => (
-              <MenuItem key={course.courseid} value={course.courseid}>
-                {course.course_name}
+              <MenuItem key={course.refId} value={course.refId}>
+                {course.name}
               </MenuItem>
             ))}
           </Select>
